@@ -2,16 +2,47 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+
 st.set_page_config(page_title="Dashboard Massar",page_icon="📊",layout="wide")
 #st.header("Exploration des données du système de gestion scolaire MASSAR")
 # Add title using Markdown
 #st.markdown("# Exploration des données du système de gestion scolaire MASSAR")
 
 # Add some styling to the title
-st.markdown("---")
-st.markdown("<small>@FAHMI Marouane</small>", unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center; color: #1E90FF;'>Exploration des données du système de gestion scolaire MASSAR</h1>", unsafe_allow_html=True)
 
+
+
+
+##################################
+custom_css = """
+<style>
+.metric-card {
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 10px;
+}
+
+.metric-card-title {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.metric-card-value {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.metric-card-delta {
+    font-size: 16px;
+}
+</style>
+"""
+##################################
 # Load data
 @st.cache_data
 def load_data(uploaded_file):
@@ -1155,6 +1186,55 @@ def requette_7(df):
 
 
 
+# Function to display metrics
+def display_metrics(data):
+    # Line 1: Total students, Total Males, Total Females
+    total_students = len(data)
+    total_male = data[data['Sexe'] == 'H']['Sexe'].count()
+    total_female = data[data['Sexe'] == 'F']['Sexe'].count()
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Total Students", total_students)
+    c2.metric("Total Males", total_male)
+    c3.metric("Total Females", total_female)
+
+    # Line 2: Total students in each classe
+    total_students_per_classe = data.groupby('Classe').size().reset_index(name='Total Students')
+
+    st.subheader("Total Students in Each Classe")
+    with st.expander("Show Total Students in Each Classe"):
+        for index, row in total_students_per_classe.iterrows():
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                st.write(row['Classe'])
+            with col2:
+                st.metric("Total Students", row['Total Students'])
+
+    # Line 3: Total students in each sub classe
+    total_students_per_sub_classe = data.groupby('Sub Classe').size().reset_index(name='Total Students')
+
+    st.subheader("Total Students in Each Sub Classe")
+    with st.expander("Show Total Students in Each Sub Classe"):
+        for index, row in total_students_per_sub_classe.iterrows():
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                st.write(row['Sub Classe'])
+            with col2:
+                st.metric("Total Students", row['Total Students'])
+
+    # Line 4: Mean in each sub classe (use column: Moyenne)
+    mean_per_sub_classe = data.groupby('Sub Classe')['Moyenne'].mean().reset_index(name='Mean')
+    mean_per_sub_classe['Mean'] = mean_per_sub_classe['Mean'].round(2)
+
+    st.subheader("Mean in Each Sub Classe")
+    with st.expander("Show Mean in Each Sub Classe"):
+        for index, row in mean_per_sub_classe.iterrows():
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                st.write(row['Sub Classe'])
+            with col2:
+                st.metric("Mean", row['Mean'])
+
                 
 # Define the main function
 def main():
@@ -1165,13 +1245,18 @@ def main():
     uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
 
     data = load_data(uploaded_file)
-    
+        
     # Check if data is uploaded
     if not data.empty:
         st.sidebar.title("Queries")
-        selected_query = st.sidebar.selectbox('Select Query', ['Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves'])
+        selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves'])
 
-        if selected_query == 'Age':
+
+
+
+        if selected_query == 'Statistic info':
+            display_metrics(data)
+        elif selected_query == 'Age':
             requette_1(data)
         elif selected_query == 'Sexe':
             requette_2(data)
