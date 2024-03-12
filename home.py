@@ -8,6 +8,8 @@ st.set_page_config(page_title="Dashboard Massar",page_icon="📊",layout="wide")
 #st.markdown("# Exploration des données du système de gestion scolaire MASSAR")
 
 # Add some styling to the title
+st.markdown("---")
+st.markdown("<small>@FAHMI Marouane</small>", unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center; color: #1E90FF;'>Exploration des données du système de gestion scolaire MASSAR</h1>", unsafe_allow_html=True)
 
 # Load data
