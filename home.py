@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.preprocessing import StandardScaler
+
 
 
 st.set_page_config(page_title="Dashboard Massar",page_icon="📊",layout="wide")
