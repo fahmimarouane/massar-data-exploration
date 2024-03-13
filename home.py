@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import StandardScaler
 
 
 st.set_page_config(page_title="Dashboard Massar",page_icon="📊",layout="wide")
@@ -1235,7 +1237,31 @@ def display_metrics(data):
             with col2:
                 st.metric("Mean", row['Mean'])
 
-                
+
+def display_student_info(data):
+    # Titre de l'application
+    st.title("Système de Recommandation Scolaire")
+
+    # Champ de saisie pour le code Massar
+    code_massar_input = st.text_input("Saisir le Code Massar")
+
+    # Liste déroulante pour choisir parmi les codes Massar disponibles
+    codes_massar_list = data['Code Massar'].unique()
+    selected_codes_massar = st.multiselect("Choisir un ou plusieurs Code Massar", codes_massar_list)
+
+    # Affichage des informations de l'élève sélectionné
+    if code_massar_input:
+        student_info = data[data['Code Massar'] == code_massar_input]
+        if not student_info.empty:
+            st.subheader("Informations de l'élève")
+            st.write(student_info)
+        else:
+            st.write("Aucune information trouvée pour ce Code Massar.")
+    elif selected_codes_massar:
+        selected_student_info = data[data['Code Massar'].isin(selected_codes_massar)]
+        st.subheader("Informations des élèves sélectionnés")
+        st.write(selected_student_info)
+                  
 # Define the main function
 def main():
     #st.title("Streamlit App")
@@ -1249,7 +1275,7 @@ def main():
     # Check if data is uploaded
     if not data.empty:
         st.sidebar.title("Queries")
-        selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves'])
+        selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves','Information sur apprenant'])
 
 
 
@@ -1270,6 +1296,8 @@ def main():
             requette_6(data)
         elif selected_query == 'Trois premiers éleves':
             requette_7(data)
-
+        elif selected_query == 'Information sur apprenant':
+            display_student_info(data)
+          
 if __name__ == '__main__':
     main()
