@@ -1,7 +1,16 @@
 import streamlit as st
 import pandas as pd
+import numpy as np 
 import plotly.express as px
+import os
+import re
+import datetime
+import nltk
 
+# Download NLTK stopwords corpus if not already downloaded
+nltk.download('stopwords')
+# Now you can import stopwords
+from nltk.corpus import stopwords
 
 
 st.set_page_config(page_title="Dashboard Massar",page_icon="📊",layout="wide")
@@ -9,53 +18,202 @@ st.set_page_config(page_title="Dashboard Massar",page_icon="📊",layout="wide")
 # Add title using Markdown
 #st.markdown("# Exploration des données du système de gestion scolaire MASSAR")
 
-# Add some styling to the title
-st.markdown("<h1 style='text-align: center; color: #1E90FF;'>Exploration des données du système de gestion scolaire MASSAR</h1>", unsafe_allow_html=True)
-
-
-
-
-##################################
 custom_css = """
 <style>
-.metric-card {
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
-    color: #333;
-    margin: 10px;
-}
+    /* Define responsive CSS rules */
+    @media screen and (max-width: 600px) {
+        /* Adjust layout for small screens */
+        .container {
+            width: 90%; /* Adjust width for small screens */
+        }
+    }
 
-.metric-card-title {
-    font-size: 20px;
-    margin-bottom: 5px;
-}
+    @media screen and (min-width: 601px) {
+        /* Adjust layout for medium and large screens */
+        .container {
+            width: 70%; /* Adjust width for medium and large screens */
+        }
+    }
+    .metric-card {
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        color: #333;
+        margin: 10px;
+    }
 
-.metric-card-value {
-    font-size: 24px;
-    font-weight: bold;
-}
+    .metric-card-title {
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
 
-.metric-card-delta {
-    font-size: 16px;
-}
+    .metric-card-value {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .metric-card-delta {
+        font-size: 16px;
+    }
+
+    .black-background {
+        background-color: #000;
+        color: #BF1F4D; /* Soft Blue Color */
+    }
 </style>
 """
-##################################
-# Load data
-@st.cache_data
-def load_data(uploaded_file):
-    if uploaded_file is not None:
-        # Load the uploaded file
-        return pd.read_excel(uploaded_file)
-    else:
-        # Return an empty DataFrame if no file is uploaded
-        return pd.DataFrame()
+
+# Apply the custom CSS
+st.markdown(custom_css, unsafe_allow_html=True)
+
+st.markdown("@FAHMI Marouane")
+st.markdown("---")
+# Use the custom class for elements on black background
+st.markdown("<h2 class='black-background' style='text-align: center;'>Exploration des données du système de gestion scolaire MASSAR</h2>", unsafe_allow_html=True)
 
 
-# Requette 1: Age
+
+# Define the starting row for data extraction
+start_row = 17
+
+# Define the column names for the specific data to be extracted
+column_names = ['Unnamed: 2', 'Unnamed: 3', 'Unnamed: 5', 'النقطة', 'النقطة.1', 'النقطة.2', 'النقطة.3']
+
+def process_files(uploaded_files):
+    # Create an empty list to store all extracted data
+    all_data = []
+    
+    # Define the pattern to extract class and subclass from the file name
+    #pattern = r'^export_notesCC_([0-9]+)APIC-([0-9]+)_'
+    pattern = r'^export_notesCC_([A-Z0-9]+)-([A-Z0-9]+)_'
+    
+    # Iterate over each uploaded file
+    for file in uploaded_files:
+        # Extract the file name
+        file_name = file.name
+        
+        # Search for matches with the pattern in the file name
+        match = re.search(pattern, file_name)
+        
+        if match:
+            # Extract class and subclass from the matches
+            classe = match.group(1)
+            subclass = match.group(2)
+            
+            # Print the extracted values
+            #print(f"Class: {classe}")
+            #print(f"Subclass: {classe}-{subclass}")
+            
+            # Read the Excel file
+            df = pd.read_excel(file, skiprows=start_row-1, engine="openpyxl")
+            
+            # Extract specific data for each column
+            code_massar = list(df[column_names[0]])
+            names = list(df[column_names[1]])
+            dn = list(df[column_names[2]])
+            note_ctr1 = list(df[column_names[3]])
+            note_ctr2 = list(df[column_names[4]])
+            note_ctr3 = list(df[column_names[5]])
+            note_act = list(df[column_names[6]])
+            
+            # Store the data in a dictionary
+            data_dict = {
+                'Code Massar': code_massar,
+                'Nom et prénom': names,
+                'Date Naissance': dn,
+                'Classe': [classe] * len(code_massar),
+                'Sub Classe': [subclass] * len(code_massar),
+                'Note Ctrl 1': note_ctr1,
+                'Note Ctrl 2': note_ctr2,
+                'Note Ctrl 3': note_ctr3,
+                'Note Act Int': note_act
+            }
+            
+            # Append the data dictionary to the list
+            all_data.append(data_dict)
+    
+    # Concatenate all data dictionaries into a single DataFrame
+    df_final = pd.concat([pd.DataFrame(data) for data in all_data], ignore_index=True)
+    
+    return df_final
+
+def calculer_moyenne(df_final, pourcentage_ctrl, pourcentage_act_int):
+    moyenne_list = []
+    
+    for i in range(len(df_final["Note Ctrl 1"])):
+        if "Note Ctrl 2" not in df_final and "Note Ctrl 3" not in df_final:
+            moyenne = ((np.array(df_final["Note Ctrl 1"][i]) * pourcentage_ctrl) + 
+                       (np.array(df_final["Note Act Int"][i]) * pourcentage_act_int)) / 100
+        elif "Note Ctrl 3" not in df_final:
+            moyenne = (((np.array(df_final["Note Ctrl 1"][i]) + np.array(df_final["Note Ctrl 2"][i])) / 2) * 
+                       pourcentage_ctrl + np.array(df_final["Note Act Int"][i]) * pourcentage_act_int) / 100
+        else:
+            moyenne = (((np.array(df_final["Note Ctrl 1"][i]) + np.array(df_final["Note Ctrl 2"][i]) + 
+                         np.array(df_final["Note Ctrl 3"][i])) / 3) * pourcentage_ctrl + 
+                       np.array(df_final["Note Act Int"][i]) * pourcentage_act_int) / 100
+        
+        moyenne_list.append(round(moyenne, 2))
+    
+    df_final["Moyenne"] = moyenne_list
+    return df_final
+
+def calculer_age(df_final):
+    ages_list = []
+    
+    for date_naissance in df_final["Date Naissance"]:
+        annee_actuelle = datetime.datetime.now().year
+        age = annee_actuelle - int(date_naissance.split("-")[-1])
+        ages_list.append(age)
+    
+    df_final["Age"] = ages_list
+    return df_final
+
+def extraire_nom(df_final):
+    noms_list = []
+    
+    for nom_complet in df_final["Nom et prénom"]:
+        nom = nom_complet.split(" ")[-1]
+        noms_list.append(nom)
+    
+    df_final["Nom"] = noms_list
+    return df_final
+
+def determiner_genre(df_final):
+    genres_list = []
+    
+    for nom in df_final["Nom"]:
+        nom_normalise = re.sub(r"[^\w\s]", "", nom.lower())  # Normalize name
+        genre = "F" if nom_normalise.endswith("ة") else "H"  # Determine gender
+        genres_list.append(genre)
+    
+    df_final["Sexe"] = genres_list
+    return df_final
+
+# Define the function to evaluate notes
+def evaluer_notes(df_final):
+    evaluations_list = []
+    for moyenne in df_final["Moyenne"]:
+        if moyenne >= 18:
+            evaluations_list.append("Très bien")
+        elif 15 <= moyenne < 18:
+            evaluations_list.append("Bien")
+        elif 12 <= moyenne < 15:
+            evaluations_list.append("Assez bien")
+        elif 10 <= moyenne < 12:
+            evaluations_list.append("Passable")
+        elif 7 <= moyenne < 10:
+            evaluations_list.append("Médiocre")
+        else:
+            evaluations_list.append("Faible")
+    df_final["Mention"] = evaluations_list
+    return df_final
+
+################################## 
+
+
+#Requette 1: Age
 def requette_1(df):
     st.subheader("Age")
 
@@ -1260,43 +1418,133 @@ def display_student_info(data):
         selected_student_info = data[data['Code Massar'].isin(selected_codes_massar)]
         st.subheader("Informations des élèves sélectionnés")
         st.write(selected_student_info)
+ 
+ 
+ 
                   
 # Define the main function
 def main():
     #st.title("Streamlit App")
-    st.sidebar.title("Upload your data file")
+    st.sidebar.title("Upload your massar exported files")
 
     # File uploader in the sidebar
-    uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
+    #uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
+    uploaded_files = st.sidebar.file_uploader("Upload your Excel files", type=["xlsx"], accept_multiple_files=True)
+        # Check if files are uploaded
+    if uploaded_files:
+        df_final = process_files(uploaded_files)
+        
+        # Display the processed DataFrame
+        #st.write(df_final)
+        
+        # Calculate Moyenne column
+        #pourcentage_ctrl = 57.182
+        #pourcentage_act_int = 42.818
+        
+        # Ask the user to enter the percentage for pourcentage_ctrl
+        st.markdown("---")
+        pourcentage_ctrl = st.number_input("Enter the percentage for ctrls:", 
+                                   min_value=0.01, max_value=99.99, step=0.01, value=50.00,format="%.2f")
+        
+        pourcentage_act_int = st.number_input("Enter the percentage for Activité intégté :", 
+                                   min_value=0.01, max_value=99.99, step=0.01, value=50.00, format="%.2f")
+        
+        # Check if the total percentage is equal to 100
+        total_percentage = pourcentage_ctrl + pourcentage_act_int
+        if total_percentage != 100:
+            st.error("Error: The total percentage must equal 100. Please adjust your input.")
+        st.markdown("---")
 
-    data = load_data(uploaded_file)
+        if "Note Ctrl 2" in df_final.columns:
+            df_final.drop(columns=["Note Ctrl 2"], inplace=True)
+        if "Note Ctrl 3" in df_final.columns:
+            df_final.drop(columns=["Note Ctrl 3"], inplace=True)
+        df_final = calculer_moyenne(df_final, pourcentage_ctrl, pourcentage_act_int)
+        
+        df_final = calculer_age(df_final)
+        
+        df_final = extraire_nom(df_final)
+        
+        df_final = determiner_genre(df_final)
+        
+        # Reorder the columns
+        df_final = df_final[['Code Massar', 
+                            'Nom et prénom', 
+                            'Date Naissance', 
+                            'Age',
+                            'Sexe',
+                            'Classe', 
+                            'Sub Classe', 
+                            'Note Ctrl 1',
+                            'Note Act Int',
+                            'Moyenne'
+                            ]]
+        
+        df_final = evaluer_notes(df_final)
+        
+        # Display the DataFrame with the Moyenne column
+        #st.write(df_final)
+        
+
+
         
     # Check if data is uploaded
-    if not data.empty:
+    #if not data.empty:
         st.sidebar.title("Queries")
         selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves','Information sur apprenant'])
 
-
-
-
         if selected_query == 'Statistic info':
-            display_metrics(data)
+            st.write("Nombre total de lignes :", len(df_final))
+            # Options d'affichage
+            expander = st.expander("Nombre de lignes à afficher :", expanded=False)
+            with expander:
+                # Display the total number of rows
+                st.write("Nombre total de lignes :", len(df_final))
+
+                # Select the number of rows to display
+                row_selection = st.select_slider("Nombre de lignes à afficher", options=list(range(1, len(df_final) + 1)))
+
+                # Afficher le df avec le nombre de lignes sélectionné
+                st.write("DataFrame avec le nombre de lignes sélectionné:")
+                st.write(df_final.head(row_selection))
+
+            # Select a class
+            classe_expander = st.expander("Sélectionner une classe", expanded=False)
+            with classe_expander:
+                classe_selection = st.selectbox("Sélectionner une classe", list(df_final["Classe"].unique()))
+                st.write(f"Données pour la classe {classe_selection} :")
+                filtered_df_Classe = df_final[df_final["Classe"] == classe_selection].reset_index(drop=True)
+                st.write(filtered_df_Classe)
+                #st.write(df_final[df_final["Classe"] == classe_selection])
+
+            # Select a subclass
+            sub_classe_expander = st.expander("Sélectionner une sous-classe", expanded=False)
+            with sub_classe_expander:
+                sub_classe_selection = st.selectbox("Sélectionner une sous-classe", list(df_final["Sub Classe"].unique()))
+                st.write(f"Données pour la sous-classe {sub_classe_selection} :")
+                filtered_df_Sub_Classe = df_final[df_final["Sub Classe"] == sub_classe_selection].reset_index(drop=True)
+                st.write(filtered_df_Sub_Classe)
+                #st.write(df_final[df_final["Sub Classe"] == sub_classe_selection])
+            
+            #############
+            st.markdown("---")
+            display_metrics(df_final)
         elif selected_query == 'Age':
-            requette_1(data)
+            requette_1(df_final )
         elif selected_query == 'Sexe':
-            requette_2(data)
+            requette_2(df_final)
         elif selected_query == 'Nombre d\'élèves':
-            requette_3(data)
+            requette_3(df_final)
         elif selected_query == 'Controle 1':
-            requette_4(data)
+            requette_4(df_final)
         elif selected_query == 'Moyennes':
-            requette_5(data)
+            requette_5(df_final)
         elif selected_query == 'Mentions':
-            requette_6(data)
+            requette_6(df_final)
         elif selected_query == 'Trois premiers éleves':
-            requette_7(data)
+            requette_7(df_final)
         elif selected_query == 'Information sur apprenant':
-            display_student_info(data)
+            display_student_info(df_final)
           
 if __name__ == '__main__':
     main()
