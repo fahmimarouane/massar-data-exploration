@@ -100,7 +100,7 @@ def process_files(uploaded_files):
         if match:
             # Extract class and subclass from the matches
             classe = match.group(1)
-            subclass = match.group(2)
+            subclass = classe + "-" + match.group(2)
             
             # Print the extracted values
             #print(f"Class: {classe}")
