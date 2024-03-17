@@ -1877,16 +1877,20 @@ def main():
         
         # Ask the user to enter the percentage for pourcentage_ctrl
         st.markdown("---")
-        pourcentage_ctrl = st.number_input("Enter the percentage for ctrls:", 
-                                   min_value=0.01, max_value=99.99, step=0.01, value=50.00,format="%.2f")
-        
-        pourcentage_act_int = st.number_input("Enter the percentage for Activité intégté :", 
-                                   min_value=0.01, max_value=99.99, step=0.01, value=50.00, format="%.2f")
+        # Sidebar
+        st.sidebar.title("Input Parameters")
+        # Ask the user to enter the percentage for pourcentage_ctrl
+        pourcentage_ctrl = st.sidebar.number_input("Enter the percentage for ctrls:", 
+                                       min_value=0.01, max_value=99.99, step=0.01, value=50.00,format="%.2f")
+                
+        pourcentage_act_int = st.sidebar.number_input("Enter the percentage for Activité intégté :", 
+                                       min_value=0.01, max_value=99.99, step=0.01, value=50.00, format="%.2f")
         
         # Check if the total percentage is equal to 100
         total_percentage = pourcentage_ctrl + pourcentage_act_int
         if total_percentage != 100:
-            st.error("Error: The total percentage must equal 100. Please adjust your input.")
+            st.sidebar.error("Error: The total percentage must equal 100. Please adjust your input.")
+
         st.markdown("---")
 
         if "Note Ctrl 2" in df_final.columns:
