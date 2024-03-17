@@ -1929,7 +1929,12 @@ def main():
     # Check if data is uploaded
     #if not data.empty:
         st.sidebar.title("Queries")
-        selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves','Information sur apprenant'])
+        #selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves','Information sur apprenant'])
+        # Define the options for the selectbox
+        options = ['Statistic info', 'Age', 'Sexe', "Nombre d'élèves", 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves', 'Information sur apprenant']
+        
+        # Create the selectbox
+        selected_query = st.sidebar.selectbox('Select Query', options)
 
         if selected_query == 'Statistic info':
             st.write("Nombre total de lignes :", len(df_final))
