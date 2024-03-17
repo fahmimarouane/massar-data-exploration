@@ -1928,13 +1928,31 @@ def main():
         
     # Check if data is uploaded
     #if not data.empty:
-        st.sidebar.title("Queries")
+        #st.sidebar.title("Queries")
         #selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves','Information sur apprenant'])
-        # Define the options for the selectbox
-        options = ['Statistic info', 'Age', 'Sexe', "Nombre d'élèves", 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves', 'Information sur apprenant']
-        
-        # Create the selectbox
-        selected_query = st.sidebar.selectbox('Select Query', options)
+       
+        # Define the query options and their corresponding icons
+        query_options = {
+            'Statistic info': '📊',
+            'Age': '👵',
+            'Sexe': '⚧️',
+            'Nombre d\'élèves': '👥',
+            'Controle 1': '📝',
+            'Moyennes': '🧮',
+            'Mentions': '⭐',
+            'Trois premiers éleves': '🏆',
+            'Information sur apprenant': '🎓'
+        }
+
+        # Add a title to the sidebar
+        st.sidebar.title("Queries")
+
+        # Center-align the dropdown menu
+        st.sidebar.markdown("<h3 style='text-align: center;'>Select Query</h3>", unsafe_allow_html=True)
+
+        # Create the dropdown menu with icons
+        selected_query = st.sidebar.selectbox('', options=list(query_options.keys()), format_func=lambda option: f'{query_options[option]} {option}')
+
 
         if selected_query == 'Statistic info':
             st.write("Nombre total de lignes :", len(df_final))
