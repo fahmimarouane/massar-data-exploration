@@ -5,13 +5,7 @@ import plotly.express as px
 import os
 import re
 import datetime
-import nltk
-from streamlit_option_menu import option_menu
 
-# Download NLTK stopwords corpus if not already downloaded
-nltk.download('stopwords')
-# Now you can import stopwords
-from nltk.corpus import stopwords
 
 
 st.set_page_config(page_title="Dashboard Massar",page_icon="📊",layout="wide")
@@ -1836,6 +1830,10 @@ def main():
             display_student_info(df_final)
           
           
+          
+    
+ 
+
 
 if __name__ == '__main__':
     main()
