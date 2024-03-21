@@ -1679,8 +1679,15 @@ def main():
     # File uploader in the sidebar
     #uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
     uploaded_files = st.sidebar.file_uploader("Upload your Excel files", type=["xls","xlsx"], accept_multiple_files=True)
-        # Check if files are uploaded
-    if uploaded_files:
+    
+    # Check if files are uploaded
+    if not uploaded_files:
+        st.write("")
+        st.write("")
+        st.warning("Please upload your files !")
+        st.stop()
+    # Check if files are uploaded
+    else:
         
         # Select the first uploaded file
         file1 = uploaded_files[3]
