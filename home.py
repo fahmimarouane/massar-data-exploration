@@ -5,6 +5,7 @@ import plotly.express as px
 import os
 import re
 import datetime
+from streamlit_option_menu import option_menu
 
 
 
@@ -218,26 +219,7 @@ def calculer_age(df_final):
     df_final["Age"] = ages_list
     return df_final
 
-#def extraire_nom(df_final):
- #   noms_list = []
-    
- #   for nom_complet in df_final["Nom et prénom"]:
-  #      nom = nom_complet.split(" ")[-1]
-   #     noms_list.append(nom)
-    
-   # df_final["Nom"] = noms_list
-   # return df_final
 
-#def determiner_genre(df_final):
- #   genres_list = []
-    
-  #  for nom in df_final["Nom"]:
-   #     nom_normalise = re.sub(r"[^\w\s]", "", nom.lower())  # Normalize name
-    #    genre = "F" if nom_normalise.endswith("ة") else "H"  # Determine gender
-    #    genres_list.append(genre)
-    
-  #  df_final["Sexe"] = genres_list
-   # return df_final
 
 # Define the function to evaluate notes
 def evaluer_notes(df_final):
@@ -263,12 +245,22 @@ def evaluer_notes(df_final):
 
 #Requette 1: Age
 def requette_1(df):
-    st.subheader("Age")
-
+    st.subheader("Sous menu : Age")
     # Define subqueries for request 1
-    sub_queries = ['Répartition par l\'age', 'Répartition de l\'age par Classe', 'Répartition de l\'age par Sous Classe']
-    sub_query = st.sidebar.selectbox('Select Sub Query', sub_queries, key="sub_query_requette_1")
-    
+    sous_menus = {
+        "Age": ['Répartition par l\'age', 'Répartition de l\'age par Classe', 'Répartition de l\'age par Sous Classe']
+    }
+
+    # Use option menu to select subquery
+    if "Age" in sous_menus:
+        sub_query = option_menu(None, sous_menus["Age"], orientation="horizontal",
+                                     styles={
+                                         #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                        "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                     })
+    else:
+        st.write("No subqueries available for Age")
+
 
     # Define the main container for the page
     main_container = st.container()
@@ -425,12 +417,23 @@ def requette_1(df):
 
 # Requette 2: Sexe
 def requette_2(df):
-    st.subheader("Sexe")
+    st.subheader("Sous menu : Sexe")
+    # Define subqueries for request 1
+    sous_menus = {
+        "Sexe": ['Répartition par Sexe', 'Répartition du Sexe par Classe', 'Répartition du Sexe par Sous Classe']
+    }
 
-    # Define subqueries for request 2
-    sub_queries = ['Répartition par Sexe', 'Répartition du Sexe par Classe', 'Répartition du Sexe par Sous Classe']
-    sub_query = st.sidebar.selectbox('Select Sub Query', sub_queries)
-    
+    # Use option menu to select subquery
+    if "Sexe" in sous_menus:
+        sub_query = option_menu(None, sous_menus["Sexe"], orientation="horizontal",
+                                     styles={
+                                         #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                        "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                     })
+    else:
+        st.write("No subqueries available for Sexe")
+        
+        
     main_container = st.container()
     with main_container:
         if sub_query == 'Répartition par Sexe':
@@ -611,11 +614,24 @@ def requette_2(df):
 
 # Requette 3: Nombre d'élèves
 def requette_3(df):
-    st.subheader("Nombre d'élèves")
+    st.subheader("Sous menu : Nombre d'élèves")
+    # Define subqueries for request 1
+    sous_menus = {
+        "Nombre d'élèves": ['Nombre d\'élèves par Classe', 'Nombre d\'élèves par Sous Classe']
+    }
 
-    # Define subqueries for request 3
-    sub_queries = ['Nombre d\'élèves par Classe', 'Nombre d\'élèves par Sous Classe']
-    sub_query = st.sidebar.selectbox('Select Sub Query', sub_queries)
+    # Use option menu to select subquery
+    if "Nombre d'élèves" in sous_menus:
+        sub_query = option_menu(None, sous_menus["Nombre d'élèves"], orientation="horizontal",
+                                     styles={
+                                         #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                        "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                     })
+    else:
+        st.write("No subqueries available for Nombre d'élèves")
+    
+    
+    
     main_container = st.container()
     with main_container:
         if sub_query == 'Nombre d\'élèves par Classe':
@@ -733,11 +749,24 @@ def requette_3(df):
 
 # Requette 4: Notes Controle 1
 def requette_4(df):
-    st.subheader("Controle 1")
+    st.subheader("Sous menu : Controle 1")
+    # Define subqueries for request 1
+    sous_menus = {
+        "Controle 1": ['Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe', 'Eleves ayant note au dessus et au dessous la moyenne par Classe', 'Eleves ayant note au dessus et au dessous la moyenne par Sous Classe']
+    }
 
-    # Define subqueries for request 4
-    sub_queries = ['Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe', 'Eleves ayant note au dessus et au dessous la moyenne par Classe', 'Eleves ayant note au dessus et au dessous la moyenne par Sous Classe']
-    sub_query = st.sidebar.selectbox('Select Sub Query', sub_queries)
+    # Use option menu to select subquery
+    if "Controle 1" in sous_menus:
+        sub_query = option_menu(None, sous_menus["Controle 1"], orientation="horizontal",
+                                     styles={
+                                         #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                        "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                     })
+    else:
+        st.write("No subqueries available for Controle 1")
+    
+    
+    
     main_container = st.container()
     with main_container:
         if sub_query == 'Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe':
@@ -984,11 +1013,25 @@ def requette_4(df):
 
 # Requette 5: Notes Moyenne
 def requette_5(df):
-    st.subheader("Moyenne")
+    st.subheader("Sous menu : Moyenne")
+    # Define subqueries for request 1
+    sous_menus = {
+        "Moyenne": ['Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe', 'Eleves ayant note au dessus et au dessous la moyenne par Classe', 'Eleves ayant note au dessus et au dessous la moyenne par Sous Classe']
+    }
 
-    # Define subqueries for request 5
-    sub_queries = ['Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe', 'Eleves ayant note au dessus et au dessous la moyenne par Classe', 'Eleves ayant note au dessus et au dessous la moyenne par Sous Classe']
-    sub_query = st.sidebar.selectbox('Select Sub Query', sub_queries)
+    # Use option menu to select subquery
+    if "Moyenne" in sous_menus:
+        sub_query = option_menu(None, sous_menus["Moyenne"], orientation="horizontal",
+                                     styles={
+                                         #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                        "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                     })
+    else:
+        st.write("No subqueries available for Moyenne")
+    
+    
+    
+    
     main_container = st.container()
     with main_container:
         if sub_query == 'Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe':
@@ -1233,9 +1276,23 @@ def requette_5(df):
 def requette_6(df):
     st.subheader("Mentions")
 
-    # Define subqueries for request 6
-    sub_queries = ['Répartition par Mention', 'Répartition de la Mention par Classe', 'Répartition de la Mention par Sous Classe']
-    sub_query = st.sidebar.selectbox('Select Sub Query', sub_queries)
+    st.subheader("Sous menu : Mentions")
+    # Define subqueries for request 1
+    sous_menus = {
+        "Mentions": ['Répartition par Mention', 'Répartition de la Mention par Classe', 'Répartition de la Mention par Sous Classe']
+    }
+
+    # Use option menu to select subquery
+    if "Mentions" in sous_menus:
+        sub_query = option_menu(None, sous_menus["Mentions"], orientation="horizontal",
+                                     styles={
+                                         #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                        "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                     })
+    else:
+        st.write("No subqueries available for Mentions")
+    
+    
     main_container = st.container()
     with main_container:
         if sub_query == 'Répartition par Mention':
@@ -1587,7 +1644,7 @@ def display_metrics(data):
 
 def display_student_info(data):
     # Titre de l'application
-    st.title("Système de Recommandation Scolaire")
+    st.title("Information apprenants")
 
     # Champ de saisie pour le code Massar
     code_massar_input = st.text_input("Saisir le Code Massar")
@@ -1645,15 +1702,7 @@ def main():
         province = df_province.columns[8]
         ecole = df_ecole.columns[14]
         
-        # Display extracted information using st.metric
-        #st.title("Extracted Information")
-        #st.metric(label="Année Scolaire", value=annee_scolaire)
-        #st.metric(label="Semestre", value=semestre)
-        #st.metric(label="Matiere", value=matiere)
-        #st.metric(label="Academie", value=academie)
-        #st.metric(label="Province", value=province)
-        #st.metric(label="Ecole", value=ecole)
-        # Display extracted information using st.columns for a nice layout
+
         
         # Display extracted information using st.columns for a nice layout with CSS styling
         st.markdown("---")
@@ -1710,30 +1759,25 @@ def main():
         #st.sidebar.title("Queries")
         #selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves','Information sur apprenant'])
 
+        st.title("Menu")
 
-        # Define the query options and their corresponding icons
-        query_options = {
-            'Statistic info': '📊',
-            'Age': '👵',
-            'Sexe': '⚧️',
-            'Nombre d\'élèves': '👥',
-            'Controle 1': '📝',
-            'Moyennes': '🧮',
-            'Mentions': '⭐',
-            'N premiers éleves': '🏆',
-            'Information sur apprenant': '🎓'
-        }
-
-        # Add a title to the sidebar
-        st.sidebar.title("Queries")
-        #st.sidebar.markdown("Queries")
-        # Center-align the dropdown menu
-        #st.sidebar.markdown("<h3 style='text-align: center;'>Select Query</h3>", unsafe_allow_html=True)
-
-        # Create the dropdown menu with icons
-        selected_query = st.sidebar.selectbox('', options=list(query_options.keys()), format_func=lambda option: f'{query_options[option]} {option}')
-
-
+        # Define the main query options
+        query_options = ["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Controle 1", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"]
+        
+        # Use the option menu to select the main query
+        selected_query = option_menu(None, 
+                            ["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Controle 1", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"],
+                            #icons=list(query_options.values()),
+                            #icons=["gender-ambiguous", "person-circle" ,"info-circle", "person-lines-fill", "person-vcard", "journal-text", "journal-check","123", "person-badge"],
+                            icons= ["info-circle", "person-circle"  ,"gender-ambiguous",  "person-lines-fill", "person-vcard", "journal-text", "journal-check","123", "person-badge" ],
+                            menu_icon="cast",
+                            default_index=0,
+                            orientation="horizontal",
+                            styles={
+                                #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                            }
+                )
 
 
 
@@ -1746,10 +1790,7 @@ def main():
         df_final = calculer_moyenne(df_final, pourcentage_ctrl, pourcentage_act_int)
         
         df_final = calculer_age(df_final)
-        
-        #df_final = extraire_nom(df_final)
-        
-        #df_final = determiner_genre(df_final)
+
         
         # Reorder the columns
         df_final = df_final[['Code Massar', 
@@ -1766,12 +1807,6 @@ def main():
         
         df_final = evaluer_notes(df_final)
         
-        # Display the DataFrame with the Moyenne column
-        #st.write(df_final)
-        
-
-
-
 
 
 
@@ -1813,7 +1848,7 @@ def main():
             st.markdown("---")
             display_metrics(df_final)
         elif selected_query == 'Age':
-            requette_1(df_final )
+            requette_1(df_final)
         elif selected_query == 'Sexe':
             requette_2(df_final)
         elif selected_query == 'Nombre d\'élèves':
