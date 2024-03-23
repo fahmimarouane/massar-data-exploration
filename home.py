@@ -90,6 +90,10 @@ def main():
         st.write("")
         st.write("")
         st.warning("Please upload your files !")
+        st.write("")
+        # Display warning message
+        st.info("Required files:\n1) Exported lists from Massar with option (*) (Many xlsx files)\n2) Students list of the actual year, given by the director of school (One xls or xlsx file)")
+        
         st.stop()
     # Check if files are uploaded
     else:
