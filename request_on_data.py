@@ -937,6 +937,10 @@ def requette_4(df):
 
 
 
+
+    
+    
+
 #Requette Controle 2 : 
 
 def requette_4c2(df):
@@ -1275,7 +1279,6 @@ def requette_4c2(df):
 
 
 
-#########################################################
 
 
 
@@ -1613,11 +1616,6 @@ def requette_4c3(df):
                                             color_discrete_sequence=colors)
                             #st.plotly_chart(fig_pie)
                             st.plotly_chart(fig_pie, use_container_width=use_container_width)
-
-
-
-#####################################################""
-
 
 
 
