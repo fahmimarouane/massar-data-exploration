@@ -936,6 +936,701 @@ def requette_4(df):
 
 
 
+
+#Requette Controle 2 : 
+
+def requette_4c2(df):
+    st.subheader("Sous menu : Controle 2")
+    # Define subqueries for request 1
+    sous_menus = {
+        "Controle 2": ['Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe', 'Eleves ayant note au dessus et au dessous la moyenne par Classe', 'Eleves ayant note au dessus et au dessous la moyenne par Sous Classe']
+    }
+
+    # Use option menu to select subquery
+    if "Controle 2" in sous_menus:
+        sub_query = option_menu(None, sous_menus["Controle 2"], orientation="horizontal",
+                                     styles={
+                                         #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                        "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                     })
+    else:
+        st.write("No subqueries available for Controle 2")
+    
+    
+    
+    main_container = st.container()
+    with main_container:
+        if sub_query == 'Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe':
+            st.subheader("Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe")
+
+            # Select subclasses
+            #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
+            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+
+            # Filter data based on selected subclasses
+            filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
+
+            # If all subclasses are selected
+            if set(selected_subclasses) == set(df['Sub Classe'].unique()):
+                subclasse_stats_df = df.groupby('Sub Classe')['Note Ctrl 2'].agg([('Max Note', 'max'), ('Min Note', 'min'), ('Moyenne', 'mean')]).reset_index()
+                subclasse_stats_df['Moyenne'] = subclasse_stats_df['Moyenne'].round(2)
+
+                # Displaying dataframe and plot for all subclasses
+                with st.expander("Max Note, Min Note, and Moyenne of Note Ctrl 1 for All Sub Classes", expanded=False):
+                    col1, col2 = st.columns([2, 3])
+                    with col1:
+                        use_container_width = True
+                        #st.write(subclasse_stats_df)
+                        st.dataframe(subclasse_stats_df, use_container_width=use_container_width)
+                    with col2:
+                        use_container_width = True
+                        fig = px.bar(subclasse_stats_df, x='Sub Classe', y=['Max Note', 'Min Note', 'Moyenne'],
+                                    title='Max Note, Min Note, and Moyenne of Note Ctrl 2 for Each Sub Classe',
+                                    labels={'value': 'Note', 'variable': 'Statistic'},
+                                    barmode='group')
+                        fig.update_layout(xaxis_title='Sub Classe', yaxis_title='Note')
+                        #st.plotly_chart(fig)
+                        st.plotly_chart(fig, use_container_width=use_container_width)
+
+            else:
+                # Display dataframe and plot for each selected subclass
+                for subclass in selected_subclasses:
+                    subclass_data = filtered_data[filtered_data['Sub Classe'] == subclass]
+                    subclass_stats_df = subclass_data.agg({'Note Ctrl 2': ['max', 'min', 'mean']}).reset_index()
+                    subclass_stats_df.columns = ['Statistique', 'Valeur']
+                    subclass_stats_df['Valeur'] = subclass_stats_df['Valeur'].round(2)
+
+                    with st.expander(f"Max Note, Min Note, and Moyenne of Note Ctrl 2 for Sub Classe: {subclass}", expanded=False):
+                        col1, col2 = st.columns([2, 3])
+                        with col1:
+                            use_container_width = True
+                            #st.write(subclass_stats_df)
+                            st.dataframe(subclass_stats_df, use_container_width=use_container_width)
+                            
+                            # Find Code Massar, Nom et prénom, and note for max and min values
+                            max_value_row = subclass_data[subclass_data['Note Ctrl 2'] == subclass_stats_df.loc[0, 'Valeur']]
+                            min_value_row = subclass_data[subclass_data['Note Ctrl 2'] == subclass_stats_df.loc[1, 'Valeur']]
+
+                            # Extract Code Massar, Nom et prénom, and note for max and min values
+                            max_values = max_value_row[['Code Massar', 'Nom et prénom', 'Note Ctrl 2']]
+                            min_values = min_value_row[['Code Massar', 'Nom et prénom', 'Note Ctrl 2']]
+
+                            # Concatenate max and min values
+                            max_min_values = pd.concat([max_values, min_values], axis=0)
+
+                            # Prepare Excel file
+                            excel_buffer = io.BytesIO()
+                            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                                max_min_values.to_excel(writer, index=False, sheet_name=f"{subclass}")
+
+                            # Save Excel file to buffer
+                            excel_buffer.seek(0)
+                            b64 = base64.b64encode(excel_buffer.read()).decode()
+                            filename = f"name__for_{subclass}_of_max_min_note.xlsx"
+                            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">Download Excel File</a>'
+                            st.markdown(href, unsafe_allow_html=True)
+                            
+                  
+                      
+                            
+                            
+                        with col2:
+                            use_container_width = True
+                            fig = px.bar(subclass_stats_df, x='Statistique', y='Valeur',
+                                        title=f'Max Note, Min Note, and Moyenne of Note Ctrl 2 for Sub Classe: {subclass}',
+                                        labels={'Valeur': 'Note', 'Statistique': 'Statistic'},
+                                        color_discrete_sequence=px.colors.qualitative.Set1)
+                            fig.update_layout(xaxis_title='Statistic', yaxis_title='Note')
+                            #st.plotly_chart(fig)
+                            st.plotly_chart(fig, use_container_width=use_container_width)
+
+        elif sub_query == 'Eleves ayant note au dessus et au dessous la moyenne par Classe':
+            st.subheader("Eleves ayant note au dessus et au dessous la moyenne par Classe")
+
+            # Select classes
+            #selected_classes = st.multiselect("Select Classe", df['Classe'].unique())
+            selected_classes = st.multiselect("Select Classe", df['Classe'].unique(), key="select_classe_requette_1")
+
+
+            # Filter data based on selected classes
+            filtered_data = df[df['Classe'].isin(selected_classes)]
+
+            if set(selected_classes) == set(df['Classe'].unique()):
+                # Calculate total counts of Note Ctrl 1 >= 10 and < 10 for each class
+                total_counts_classe_df = df.groupby('Classe')['Note Ctrl 2'].agg([('Total >= 10', lambda x: (x >= 10).sum()), ('Total < 10', lambda x: (x < 10).sum())]).reset_index()
+
+                # Calculate total counts for each class
+                total_counts_classe_df['Total'] = total_counts_classe_df['Total >= 10'] + total_counts_classe_df['Total < 10']
+
+                # Calculate percentage for each category
+                total_counts_classe_df['Percentage >= 10'] = (total_counts_classe_df['Total >= 10'] / total_counts_classe_df['Total']) * 100
+                total_counts_classe_df['Percentage < 10'] = (total_counts_classe_df['Total < 10'] / total_counts_classe_df['Total']) * 100
+
+                # Round the percentage values to two decimal places
+                total_counts_classe_df['Percentage >= 10'] = total_counts_classe_df['Percentage >= 10'].round(2)
+                total_counts_classe_df['Percentage < 10'] = total_counts_classe_df['Percentage < 10'].round(2)
+
+                # Display the DataFrame
+                with st.expander("Eleves ayant note au dessus et au dessous la moyenne par Classe", expanded=False):
+                    col1, col2 = st.columns([2, 3])
+                    with col1:
+                        use_container_width = True
+                        #st.write(total_counts_classe_df)
+                        st.dataframe(total_counts_classe_df, use_container_width=use_container_width)
+
+                    with col2:
+                        use_container_width = True
+                        fig_bar = px.bar(total_counts_classe_df, x='Classe', y=['Total >= 10', 'Total < 10'],
+                                        title='Total Counts of Note Ctrl 2 >= 10 and <= 10 for Each Class',
+                                        labels={'value': 'Count', 'variable': 'Note Ctrl 2'},
+                                        color_discrete_map={'Total >= 10': 'green', 'Total < 10': 'red'},
+                                        barmode='group')
+                        fig_bar.update_layout(xaxis_title='Classe', yaxis_title='Count')
+                        #st.plotly_chart(fig_bar)
+                        st.plotly_chart(fig_bar, use_container_width=use_container_width)
+
+                        colors = ['green', 'red']
+                        
+                        # Prepare DataFrame with required columns
+                        total_percentage_classe_moyenne_df =  total_counts_classe_df[['Classe','Percentage >= 10','Percentage < 10']]
+
+                        # Plotting Sunburst chart with legend
+                        fig = px.sunburst(total_percentage_classe_moyenne_df, path=['Classe', 'Percentage >= 10', 'Percentage < 10'], 
+                                title='Percentage Moyenne >= 10 and Moyenne < 10 in each Classe',
+                                labels={'Percentage >= 10': 'Percentage >= 10', 'Percentage < 10': 'Percentage < 10'})
+                        #st.plotly_chart(fig)
+                        st.plotly_chart(fig, use_container_width=use_container_width)
+                        
+                        
+
+            else:
+                for classe in selected_classes:
+                    total_counts_classe_df = filtered_data[filtered_data['Classe'] == classe].groupby('Classe')['Note Ctrl 2'].agg([('Total >= 10', lambda x: (x >= 10).sum()), ('Total < 10', lambda x: (x < 10).sum())]).reset_index()
+
+                    with st.expander(f"Eleves ayant note au dessus et au dessous la moyenne pour la classe: {classe}", expanded=False):
+                        col1, col2 = st.columns([2, 3])
+                        with col1:
+                            use_container_width = True
+                            #st.write(total_counts_classe_df)
+                            st.dataframe(total_counts_classe_df, use_container_width=use_container_width)
+                            # User selects whether to download students with scores >= 10 or < 10
+                            #score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key="select_score_range")
+                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{classe}")
+                             # Filter data for the current class
+                            class_data = filtered_data[filtered_data['Classe'] == classe]
+
+                            # Filter data based on selected score range
+                            if score_range == "superieur à 10":
+                                students = class_data[class_data['Note Ctrl 2'] >= 10]
+                            else:
+                                students = class_data[class_data['Note Ctrl 2'] < 10]
+                                
+                            excel_buffer = io.BytesIO()
+                            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                                students[['Code Massar', 'Nom et prénom', 'Note Ctrl 2', 'Sub Classe']].to_excel(writer, index=False, sheet_name=f"{classe}_{score_range}")
+
+                            # Save Excel file to buffer
+                            excel_buffer.seek(0)
+                            b64 = base64.b64encode(excel_buffer.read()).decode()
+                            filename = f"students_{classe}_{score_range}.xlsx"
+                            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">Download Excel File</a>'
+                            st.markdown(href, unsafe_allow_html=True)
+
+                        with col2:
+                            use_container_width = True
+                            fig_bar = px.bar(total_counts_classe_df, x='Classe', y=['Total >= 10', 'Total < 10'],
+                                            title=f'Total Counts of Note Ctrl 2 >= 10 and <= 10 for Classe: {classe}',
+                                            labels={'value': 'Count', 'variable': 'Note Ctrl 2'},
+                                            color_discrete_map={'Total >= 10': 'green', 'Total < 10': 'red'},
+                                            barmode='group')
+                            fig_bar.update_layout(xaxis_title='Classe', yaxis_title='Count')
+                            #st.plotly_chart(fig_bar)
+                            st.plotly_chart(fig_bar, use_container_width=use_container_width)
+
+                            colors = ['green', 'red']
+
+                            # Data for current class
+                            labels = ["Percentage >= 10", "Percentage < 10"]
+                            values = [(total_counts_classe_df['Total >= 10'].iloc[0] / (total_counts_classe_df['Total >= 10'].iloc[0] + total_counts_classe_df['Total < 10'].iloc[0])) * 100, (total_counts_classe_df['Total < 10'].iloc[0] / (total_counts_classe_df['Total >= 10'].iloc[0] + total_counts_classe_df['Total < 10'].iloc[0])) * 100]
+
+                            # Create pie chart for current class with custom colors
+                            fig_pie = px.pie(names=labels, values=values, title=f"Class: {classe}",
+                                            color_discrete_sequence=colors)
+                            #st.plotly_chart(fig_pie)
+                            st.plotly_chart(fig_pie, use_container_width=use_container_width)
+                            
+
+        elif sub_query == 'Eleves ayant note au dessus et au dessous la moyenne par Sous Classe':
+            st.subheader("Eleves ayant note au dessus et au dessous la moyenne par Sous Classe")
+
+            # Select subclasses
+            #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
+            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+
+            # Filter data based on selected subclasses
+            filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
+
+            if set(selected_subclasses) == set(df['Sub Classe'].unique()):
+                # Calculate total counts of Note Ctrl 1 >= 10 and < 10 for each sub class
+                total_counts_subclasse_df = df.groupby('Sub Classe')['Note Ctrl 2'].agg([('Total >= 10', lambda x: (x >= 10).sum()), ('Total < 10', lambda x: (x < 10).sum())]).reset_index()
+
+                # Calculate the total number of students for each sub class
+                total_counts_subclasse_df['Total'] = total_counts_subclasse_df['Total >= 10'] + total_counts_subclasse_df['Total < 10']
+
+                # Calculate the percentage for each category
+                total_counts_subclasse_df['Percentage >= 10'] = (total_counts_subclasse_df['Total >= 10'] / total_counts_subclasse_df['Total']) * 100
+                total_counts_subclasse_df['Percentage < 10'] = (total_counts_subclasse_df['Total < 10'] / total_counts_subclasse_df['Total']) * 100
+
+                # Round the percentage values
+                total_counts_subclasse_df['Percentage >= 10'] = total_counts_subclasse_df['Percentage >= 10'].round()
+                total_counts_subclasse_df['Percentage < 10'] = total_counts_subclasse_df['Percentage < 10'].round()
+
+                # Display the DataFrame
+                with st.expander("Eleves ayant note au dessus et au dessous la moyenne par Sous Classe", expanded=False):
+                    col1, col2 = st.columns([2, 3])
+                    with col1:
+                        use_container_width = True
+                        st.dataframe(total_counts_subclasse_df, use_container_width=use_container_width)
+                        #st.write(total_counts_subclasse_df)
+
+                    with col2:
+                        use_container_width = True
+                        fig_bar = px.bar(total_counts_subclasse_df, x='Sub Classe', y=['Total >= 10', 'Total < 10'],
+                                        title='Total Counts of Note Ctrl 2 >= 10 and <= 10 for Each Sub Classe',
+                                        labels={'value': 'Count', 'variable': 'Note Ctrl 2'},
+                                        color_discrete_map={'Total >= 10': 'green', 'Total < 10': 'red'},
+                                        barmode='group')
+                        fig_bar.update_layout(xaxis_title='Sub Classe', yaxis_title='Count')
+                        #st.plotly_chart(fig_bar)
+                        st.plotly_chart(fig_bar, use_container_width=use_container_width)
+                        
+
+                        colors = ['green', 'red']
+                        
+                        # Prepare DataFrame with required columns
+                        total_percentage_sub_classe_moyenne_df = total_counts_subclasse_df[['Sub Classe','Percentage >= 10','Percentage < 10']]
+
+                        # Plotting Sunburst chart with legend
+                        fig = px.sunburst(total_percentage_sub_classe_moyenne_df, path=['Sub Classe', 'Percentage >= 10', 'Percentage < 10'], 
+                                title='Percentage Moyenne >= 10 and Moyenne < 10 in each Classe',
+                                labels={'Percentage >= 10': 'Percentage >= 10', 'Percentage < 10': 'Percentage < 10'})
+                        #st.plotly_chart(fig)
+                        st.plotly_chart(fig, use_container_width=use_container_width)
+                        
+
+
+            else:
+                for subclass in selected_subclasses:
+                    total_counts_subclasse_df = filtered_data[filtered_data['Sub Classe'] == subclass].groupby('Sub Classe')['Note Ctrl 2'].agg([('Total >= 10', lambda x: (x >= 10).sum()), ('Total < 10', lambda x: (x < 10).sum())]).reset_index()
+
+                    with st.expander(f"Eleves ayant note au dessus et au dessous la moyenne par Sous Classe: {subclass}", expanded=False):
+                        col1, col2 = st.columns([2, 3])
+                        with col1:
+                            use_container_width = True
+                            st.dataframe(total_counts_subclasse_df, use_container_width=use_container_width)
+                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
+                            # Filter data for the current class
+                            subclass_data = filtered_data[filtered_data['Sub Classe'] == subclass]
+
+                            # Filter data based on selected score range
+                            if score_range == "superieur à 10":
+                                students = subclass_data[subclass_data['Note Ctrl 2'] >= 10]
+                            else:
+                                students = subclass_data[subclass_data['Note Ctrl 2'] < 10]
+                                
+                            excel_buffer = io.BytesIO()
+                            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                                students[['Code Massar', 'Nom et prénom', 'Note Ctrl 2', 'Sub Classe']].to_excel(writer, index=False, sheet_name=f"{subclass}_{score_range}")
+
+                            # Save Excel file to buffer
+                            excel_buffer.seek(0)
+                            b64 = base64.b64encode(excel_buffer.read()).decode()
+                            filename = f"students_{subclass}_{score_range}.xlsx"
+                            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">Download Excel File</a>'
+                            st.markdown(href, unsafe_allow_html=True)
+
+                        with col2:
+                            use_container_width = True
+                            fig_bar = px.bar(total_counts_subclasse_df, x='Sub Classe', y=['Total >= 10', 'Total < 10'],
+                                            title=f'Total Counts of Note Ctrl 2 >= 10 and <= 10 for Sous Classe: {subclass}',
+                                            labels={'value': 'Count', 'variable': 'Note Ctrl 2'},
+                                            color_discrete_map={'Total >= 10': 'green', 'Total < 10': 'red'},
+                                            barmode='group')
+                            fig_bar.update_layout(xaxis_title='Sub Classe', yaxis_title='Count')
+                            #st.plotly_chart(fig_bar)
+                            st.plotly_chart(fig_bar, use_container_width=use_container_width)
+
+                            colors = ['green', 'red']
+
+                            # Data for current sub class
+                            labels = ["Percentage >= 10", "Percentage < 10"]
+                            values = [(total_counts_subclasse_df['Total >= 10'].iloc[0] / (total_counts_subclasse_df['Total >= 10'].iloc[0] + total_counts_subclasse_df['Total < 10'].iloc[0])) * 100, (total_counts_subclasse_df['Total < 10'].iloc[0] / (total_counts_subclasse_df['Total >= 10'].iloc[0] + total_counts_subclasse_df['Total < 10'].iloc[0])) * 100]
+
+                            # Create pie chart for current sub class with custom colors
+                            fig_pie = px.pie(names=labels, values=values, title=f"Sub Classe: {subclass}",
+                                            color_discrete_sequence=colors)
+                            #st.plotly_chart(fig_pie)
+                            st.plotly_chart(fig_pie, use_container_width=use_container_width)
+
+
+
+
+#########################################################
+
+
+
+# Requette Controle 3 : 
+
+def requette_4c3(df):
+    st.subheader("Sous menu : Controle 3")
+    # Define subqueries for request 1
+    sous_menus = {
+        "Controle 3": ['Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe', 'Eleves ayant note au dessus et au dessous la moyenne par Classe', 'Eleves ayant note au dessus et au dessous la moyenne par Sous Classe']
+    }
+
+    # Use option menu to select subquery
+    if "Controle 3" in sous_menus:
+        sub_query = option_menu(None, sous_menus["Controle 3"], orientation="horizontal",
+                                     styles={
+                                         #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
+                                        "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                     })
+    else:
+        st.write("No subqueries available for Controle 3")
+    
+    
+    
+    main_container = st.container()
+    with main_container:
+        if sub_query == 'Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe':
+            st.subheader("Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe")
+
+            # Select subclasses
+            #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
+            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+
+            # Filter data based on selected subclasses
+            filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
+
+            # If all subclasses are selected
+            if set(selected_subclasses) == set(df['Sub Classe'].unique()):
+                subclasse_stats_df = df.groupby('Sub Classe')['Note Ctrl 3'].agg([('Max Note', 'max'), ('Min Note', 'min'), ('Moyenne', 'mean')]).reset_index()
+                subclasse_stats_df['Moyenne'] = subclasse_stats_df['Moyenne'].round(2)
+
+                # Displaying dataframe and plot for all subclasses
+                with st.expander("Max Note, Min Note, and Moyenne of Note Ctrl 3 for All Sub Classes", expanded=False):
+                    col1, col2 = st.columns([2, 3])
+                    with col1:
+                        use_container_width = True
+                        #st.write(subclasse_stats_df)
+                        st.dataframe(subclasse_stats_df, use_container_width=use_container_width)
+                    with col2:
+                        use_container_width = True
+                        fig = px.bar(subclasse_stats_df, x='Sub Classe', y=['Max Note', 'Min Note', 'Moyenne'],
+                                    title='Max Note, Min Note, and Moyenne of Note Ctrl 3 for Each Sub Classe',
+                                    labels={'value': 'Note', 'variable': 'Statistic'},
+                                    barmode='group')
+                        fig.update_layout(xaxis_title='Sub Classe', yaxis_title='Note')
+                        #st.plotly_chart(fig)
+                        st.plotly_chart(fig, use_container_width=use_container_width)
+
+            else:
+                # Display dataframe and plot for each selected subclass
+                for subclass in selected_subclasses:
+                    subclass_data = filtered_data[filtered_data['Sub Classe'] == subclass]
+                    subclass_stats_df = subclass_data.agg({'Note Ctrl 3': ['max', 'min', 'mean']}).reset_index()
+                    subclass_stats_df.columns = ['Statistique', 'Valeur']
+                    subclass_stats_df['Valeur'] = subclass_stats_df['Valeur'].round(2)
+
+                    with st.expander(f"Max Note, Min Note, and Moyenne of Note Ctrl 3 for Sub Classe: {subclass}", expanded=False):
+                        col1, col2 = st.columns([2, 3])
+                        with col1:
+                            use_container_width = True
+                            #st.write(subclass_stats_df)
+                            st.dataframe(subclass_stats_df, use_container_width=use_container_width)
+                            
+                            # Find Code Massar, Nom et prénom, and note for max and min values
+                            max_value_row = subclass_data[subclass_data['Note Ctrl 3'] == subclass_stats_df.loc[0, 'Valeur']]
+                            min_value_row = subclass_data[subclass_data['Note Ctrl 3'] == subclass_stats_df.loc[1, 'Valeur']]
+
+                            # Extract Code Massar, Nom et prénom, and note for max and min values
+                            max_values = max_value_row[['Code Massar', 'Nom et prénom', 'Note Ctrl 3']]
+                            min_values = min_value_row[['Code Massar', 'Nom et prénom', 'Note Ctrl 3']]
+
+                            # Concatenate max and min values
+                            max_min_values = pd.concat([max_values, min_values], axis=0)
+
+                            # Prepare Excel file
+                            excel_buffer = io.BytesIO()
+                            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                                max_min_values.to_excel(writer, index=False, sheet_name=f"{subclass}")
+
+                            # Save Excel file to buffer
+                            excel_buffer.seek(0)
+                            b64 = base64.b64encode(excel_buffer.read()).decode()
+                            filename = f"name__for_{subclass}_of_max_min_note.xlsx"
+                            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">Download Excel File</a>'
+                            st.markdown(href, unsafe_allow_html=True)
+                            
+                  
+                      
+                            
+                            
+                        with col2:
+                            use_container_width = True
+                            fig = px.bar(subclass_stats_df, x='Statistique', y='Valeur',
+                                        title=f'Max Note, Min Note, and Moyenne of Note Ctrl 3 for Sub Classe: {subclass}',
+                                        labels={'Valeur': 'Note', 'Statistique': 'Statistic'},
+                                        color_discrete_sequence=px.colors.qualitative.Set1)
+                            fig.update_layout(xaxis_title='Statistic', yaxis_title='Note')
+                            #st.plotly_chart(fig)
+                            st.plotly_chart(fig, use_container_width=use_container_width)
+
+        elif sub_query == 'Eleves ayant note au dessus et au dessous la moyenne par Classe':
+            st.subheader("Eleves ayant note au dessus et au dessous la moyenne par Classe")
+
+            # Select classes
+            #selected_classes = st.multiselect("Select Classe", df['Classe'].unique())
+            selected_classes = st.multiselect("Select Classe", df['Classe'].unique(), key="select_classe_requette_1")
+
+
+            # Filter data based on selected classes
+            filtered_data = df[df['Classe'].isin(selected_classes)]
+
+            if set(selected_classes) == set(df['Classe'].unique()):
+                # Calculate total counts of Note Ctrl 1 >= 10 and < 10 for each class
+                total_counts_classe_df = df.groupby('Classe')['Note Ctrl 3'].agg([('Total >= 10', lambda x: (x >= 10).sum()), ('Total < 10', lambda x: (x < 10).sum())]).reset_index()
+
+                # Calculate total counts for each class
+                total_counts_classe_df['Total'] = total_counts_classe_df['Total >= 10'] + total_counts_classe_df['Total < 10']
+
+                # Calculate percentage for each category
+                total_counts_classe_df['Percentage >= 10'] = (total_counts_classe_df['Total >= 10'] / total_counts_classe_df['Total']) * 100
+                total_counts_classe_df['Percentage < 10'] = (total_counts_classe_df['Total < 10'] / total_counts_classe_df['Total']) * 100
+
+                # Round the percentage values to two decimal places
+                total_counts_classe_df['Percentage >= 10'] = total_counts_classe_df['Percentage >= 10'].round(2)
+                total_counts_classe_df['Percentage < 10'] = total_counts_classe_df['Percentage < 10'].round(2)
+
+                # Display the DataFrame
+                with st.expander("Eleves ayant note au dessus et au dessous la moyenne par Classe", expanded=False):
+                    col1, col2 = st.columns([2, 3])
+                    with col1:
+                        use_container_width = True
+                        #st.write(total_counts_classe_df)
+                        st.dataframe(total_counts_classe_df, use_container_width=use_container_width)
+
+                    with col2:
+                        use_container_width = True
+                        fig_bar = px.bar(total_counts_classe_df, x='Classe', y=['Total >= 10', 'Total < 10'],
+                                        title='Total Counts of Note Ctrl 3 >= 10 and <= 10 for Each Class',
+                                        labels={'value': 'Count', 'variable': 'Note Ctrl 3'},
+                                        color_discrete_map={'Total >= 10': 'green', 'Total < 10': 'red'},
+                                        barmode='group')
+                        fig_bar.update_layout(xaxis_title='Classe', yaxis_title='Count')
+                        #st.plotly_chart(fig_bar)
+                        st.plotly_chart(fig_bar, use_container_width=use_container_width)
+
+                        colors = ['green', 'red']
+                        
+                        # Prepare DataFrame with required columns
+                        total_percentage_classe_moyenne_df =  total_counts_classe_df[['Classe','Percentage >= 10','Percentage < 10']]
+
+                        # Plotting Sunburst chart with legend
+                        fig = px.sunburst(total_percentage_classe_moyenne_df, path=['Classe', 'Percentage >= 10', 'Percentage < 10'], 
+                                title='Percentage Moyenne >= 10 and Moyenne < 10 in each Classe',
+                                labels={'Percentage >= 10': 'Percentage >= 10', 'Percentage < 10': 'Percentage < 10'})
+                        #st.plotly_chart(fig)
+                        st.plotly_chart(fig, use_container_width=use_container_width)
+                        
+                        
+
+            else:
+                for classe in selected_classes:
+                    total_counts_classe_df = filtered_data[filtered_data['Classe'] == classe].groupby('Classe')['Note Ctrl 3'].agg([('Total >= 10', lambda x: (x >= 10).sum()), ('Total < 10', lambda x: (x < 10).sum())]).reset_index()
+
+                    with st.expander(f"Eleves ayant note au dessus et au dessous la moyenne pour la classe: {classe}", expanded=False):
+                        col1, col2 = st.columns([2, 3])
+                        with col1:
+                            use_container_width = True
+                            #st.write(total_counts_classe_df)
+                            st.dataframe(total_counts_classe_df, use_container_width=use_container_width)
+                            # User selects whether to download students with scores >= 10 or < 10
+                            #score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key="select_score_range")
+                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{classe}")
+                             # Filter data for the current class
+                            class_data = filtered_data[filtered_data['Classe'] == classe]
+
+                            # Filter data based on selected score range
+                            if score_range == "superieur à 10":
+                                students = class_data[class_data['Note Ctrl 3'] >= 10]
+                            else:
+                                students = class_data[class_data['Note Ctrl 3'] < 10]
+                                
+                            excel_buffer = io.BytesIO()
+                            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                                students[['Code Massar', 'Nom et prénom', 'Note Ctrl 1', 'Sub Classe']].to_excel(writer, index=False, sheet_name=f"{classe}_{score_range}")
+
+                            # Save Excel file to buffer
+                            excel_buffer.seek(0)
+                            b64 = base64.b64encode(excel_buffer.read()).decode()
+                            filename = f"students_{classe}_{score_range}.xlsx"
+                            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">Download Excel File</a>'
+                            st.markdown(href, unsafe_allow_html=True)
+
+                        with col2:
+                            use_container_width = True
+                            fig_bar = px.bar(total_counts_classe_df, x='Classe', y=['Total >= 10', 'Total < 10'],
+                                            title=f'Total Counts of Note Ctrl 3 >= 10 and <= 10 for Classe: {classe}',
+                                            labels={'value': 'Count', 'variable': 'Note Ctrl 3'},
+                                            color_discrete_map={'Total >= 10': 'green', 'Total < 10': 'red'},
+                                            barmode='group')
+                            fig_bar.update_layout(xaxis_title='Classe', yaxis_title='Count')
+                            #st.plotly_chart(fig_bar)
+                            st.plotly_chart(fig_bar, use_container_width=use_container_width)
+
+                            colors = ['green', 'red']
+
+                            # Data for current class
+                            labels = ["Percentage >= 10", "Percentage < 10"]
+                            values = [(total_counts_classe_df['Total >= 10'].iloc[0] / (total_counts_classe_df['Total >= 10'].iloc[0] + total_counts_classe_df['Total < 10'].iloc[0])) * 100, (total_counts_classe_df['Total < 10'].iloc[0] / (total_counts_classe_df['Total >= 10'].iloc[0] + total_counts_classe_df['Total < 10'].iloc[0])) * 100]
+
+                            # Create pie chart for current class with custom colors
+                            fig_pie = px.pie(names=labels, values=values, title=f"Class: {classe}",
+                                            color_discrete_sequence=colors)
+                            #st.plotly_chart(fig_pie)
+                            st.plotly_chart(fig_pie, use_container_width=use_container_width)
+                            
+
+        elif sub_query == 'Eleves ayant note au dessus et au dessous la moyenne par Sous Classe':
+            st.subheader("Eleves ayant note au dessus et au dessous la moyenne par Sous Classe")
+
+            # Select subclasses
+            #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
+            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+
+            # Filter data based on selected subclasses
+            filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
+
+            if set(selected_subclasses) == set(df['Sub Classe'].unique()):
+                # Calculate total counts of Note Ctrl 1 >= 10 and < 10 for each sub class
+                total_counts_subclasse_df = df.groupby('Sub Classe')['Note Ctrl 3'].agg([('Total >= 10', lambda x: (x >= 10).sum()), ('Total < 10', lambda x: (x < 10).sum())]).reset_index()
+
+                # Calculate the total number of students for each sub class
+                total_counts_subclasse_df['Total'] = total_counts_subclasse_df['Total >= 10'] + total_counts_subclasse_df['Total < 10']
+
+                # Calculate the percentage for each category
+                total_counts_subclasse_df['Percentage >= 10'] = (total_counts_subclasse_df['Total >= 10'] / total_counts_subclasse_df['Total']) * 100
+                total_counts_subclasse_df['Percentage < 10'] = (total_counts_subclasse_df['Total < 10'] / total_counts_subclasse_df['Total']) * 100
+
+                # Round the percentage values
+                total_counts_subclasse_df['Percentage >= 10'] = total_counts_subclasse_df['Percentage >= 10'].round()
+                total_counts_subclasse_df['Percentage < 10'] = total_counts_subclasse_df['Percentage < 10'].round()
+
+                # Display the DataFrame
+                with st.expander("Eleves ayant note au dessus et au dessous la moyenne par Sous Classe", expanded=False):
+                    col1, col2 = st.columns([2, 3])
+                    with col1:
+                        use_container_width = True
+                        st.dataframe(total_counts_subclasse_df, use_container_width=use_container_width)
+                        #st.write(total_counts_subclasse_df)
+
+                    with col2:
+                        use_container_width = True
+                        fig_bar = px.bar(total_counts_subclasse_df, x='Sub Classe', y=['Total >= 10', 'Total < 10'],
+                                        title='Total Counts of Note Ctrl 3 >= 10 and <= 10 for Each Sub Classe',
+                                        labels={'value': 'Count', 'variable': 'Note Ctrl 3'},
+                                        color_discrete_map={'Total >= 10': 'green', 'Total < 10': 'red'},
+                                        barmode='group')
+                        fig_bar.update_layout(xaxis_title='Sub Classe', yaxis_title='Count')
+                        #st.plotly_chart(fig_bar)
+                        st.plotly_chart(fig_bar, use_container_width=use_container_width)
+                        
+
+                        colors = ['green', 'red']
+                        
+                        # Prepare DataFrame with required columns
+                        total_percentage_sub_classe_moyenne_df = total_counts_subclasse_df[['Sub Classe','Percentage >= 10','Percentage < 10']]
+
+                        # Plotting Sunburst chart with legend
+                        fig = px.sunburst(total_percentage_sub_classe_moyenne_df, path=['Sub Classe', 'Percentage >= 10', 'Percentage < 10'], 
+                                title='Percentage Moyenne >= 10 and Moyenne < 10 in each Classe',
+                                labels={'Percentage >= 10': 'Percentage >= 10', 'Percentage < 10': 'Percentage < 10'})
+                        #st.plotly_chart(fig)
+                        st.plotly_chart(fig, use_container_width=use_container_width)
+                        
+
+
+            else:
+                for subclass in selected_subclasses:
+                    total_counts_subclasse_df = filtered_data[filtered_data['Sub Classe'] == subclass].groupby('Sub Classe')['Note Ctrl 3'].agg([('Total >= 10', lambda x: (x >= 10).sum()), ('Total < 10', lambda x: (x < 10).sum())]).reset_index()
+
+                    with st.expander(f"Eleves ayant note au dessus et au dessous la moyenne par Sous Classe: {subclass}", expanded=False):
+                        col1, col2 = st.columns([2, 3])
+                        with col1:
+                            use_container_width = True
+                            st.dataframe(total_counts_subclasse_df, use_container_width=use_container_width)
+                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
+                            # Filter data for the current class
+                            subclass_data = filtered_data[filtered_data['Sub Classe'] == subclass]
+
+                            # Filter data based on selected score range
+                            if score_range == "superieur à 10":
+                                students = subclass_data[subclass_data['Note Ctrl 3'] >= 10]
+                            else:
+                                students = subclass_data[subclass_data['Note Ctrl 3'] < 10]
+                                
+                            excel_buffer = io.BytesIO()
+                            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                                students[['Code Massar', 'Nom et prénom', 'Note Ctrl 3', 'Sub Classe']].to_excel(writer, index=False, sheet_name=f"{subclass}_{score_range}")
+
+                            # Save Excel file to buffer
+                            excel_buffer.seek(0)
+                            b64 = base64.b64encode(excel_buffer.read()).decode()
+                            filename = f"students_{subclass}_{score_range}.xlsx"
+                            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">Download Excel File</a>'
+                            st.markdown(href, unsafe_allow_html=True)
+
+                        with col2:
+                            use_container_width = True
+                            fig_bar = px.bar(total_counts_subclasse_df, x='Sub Classe', y=['Total >= 10', 'Total < 10'],
+                                            title=f'Total Counts of Note Ctrl 3 >= 10 and <= 10 for Sous Classe: {subclass}',
+                                            labels={'value': 'Count', 'variable': 'Note Ctrl 3'},
+                                            color_discrete_map={'Total >= 10': 'green', 'Total < 10': 'red'},
+                                            barmode='group')
+                            fig_bar.update_layout(xaxis_title='Sub Classe', yaxis_title='Count')
+                            #st.plotly_chart(fig_bar)
+                            st.plotly_chart(fig_bar, use_container_width=use_container_width)
+
+                            colors = ['green', 'red']
+
+                            # Data for current sub class
+                            labels = ["Percentage >= 10", "Percentage < 10"]
+                            values = [(total_counts_subclasse_df['Total >= 10'].iloc[0] / (total_counts_subclasse_df['Total >= 10'].iloc[0] + total_counts_subclasse_df['Total < 10'].iloc[0])) * 100, (total_counts_subclasse_df['Total < 10'].iloc[0] / (total_counts_subclasse_df['Total >= 10'].iloc[0] + total_counts_subclasse_df['Total < 10'].iloc[0])) * 100]
+
+                            # Create pie chart for current sub class with custom colors
+                            fig_pie = px.pie(names=labels, values=values, title=f"Sub Classe: {subclass}",
+                                            color_discrete_sequence=colors)
+                            #st.plotly_chart(fig_pie)
+                            st.plotly_chart(fig_pie, use_container_width=use_container_width)
+
+
+
+#####################################################""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Requette 5: Notes Moyenne
 def requette_5(df):
     st.subheader("Sous menu : Moyenne")
