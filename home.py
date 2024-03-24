@@ -99,7 +99,7 @@ def main():
     else:
         
         # Select the first uploaded file
-        file1 = uploaded_files[3]
+        file1 = uploaded_files[1]
 
         # Read the selected Excel file
         df_annee = pd.read_excel(file1, skiprows=12, engine="openpyxl")
@@ -180,12 +180,46 @@ def main():
         # Define the main query options
         query_options = ["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Controle 1", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"]
         
+        
+        # Dropping columns if all values are not NaN
+        # Vérifier si la colonne 'Note Ctrl 2' est entièrement NaN
+        if 'Note Ctrl 2' in df_final.columns and df_final['Note Ctrl 2'].isnull().all():
+            df_final.drop(columns=['Note Ctrl 2'], inplace=True)
+
+        # Vérifier si la colonne 'Note Ctrl 3' est entièrement NaN
+        if 'Note Ctrl 3' in df_final.columns and df_final['Note Ctrl 3'].isnull().all():
+            df_final.drop(columns=['Note Ctrl 3'], inplace=True)
+                
+       # Check which control columns exist
+        control_columns = [col for col in ['Note Ctrl 1', 'Note Ctrl 2', 'Note Ctrl 3'] if col in df_final.columns]
+
+        # Generate the options for the option menu
+        options = ["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"]
+        if control_columns:
+            options.insert(4, "Controle 1")
+        if len(control_columns) > 1:
+            options.insert(5, "Controle 2")
+        if len(control_columns) > 2:
+            options.insert(6, "Controle 3")
+            
+        
+        # Define the icons list
+        icons = ["info-circle", "person-circle", "gender-ambiguous", "person-lines-fill", "person-vcard", "journal-check", "123", "person-badge"]
+                        
+        # Add "person-vcard" to the icons list based on the number of control columns
+        if 'Note Ctrl 1' in control_columns:
+            icons.insert(options.index("Controle 1"), "journal-text")
+        if 'Note Ctrl 2' in control_columns:
+            icons.insert(options.index("Controle 2"), "journal-text")
+        if 'Note Ctrl 3' in control_columns:
+            icons.insert(options.index("Controle 3"), "journal-text")
+                
         # Use the option menu to select the main query
         selected_query = option_menu(None, 
-                            ["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Controle 1", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"],
-                            #icons=list(query_options.values()),
-                            #icons=["gender-ambiguous", "person-circle" ,"info-circle", "person-lines-fill", "person-vcard", "journal-text", "journal-check","123", "person-badge"],
-                            icons= ["info-circle", "person-circle"  ,"gender-ambiguous",  "person-lines-fill", "person-vcard", "journal-text", "journal-check","123", "person-badge" ],
+                            #["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Controle 1", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"],
+                            options=options,
+                            #icons= ["info-circle", "person-circle"  ,"gender-ambiguous",  "person-lines-fill", "person-vcard", "journal-text", "journal-check","123", "person-badge" ],
+                            icons=icons,
                             menu_icon="cast",
                             default_index=0,
                             orientation="horizontal",
@@ -199,27 +233,78 @@ def main():
 
         #st.markdown("---")
         
-        if "Note Ctrl 2" in df_final.columns:
-            df_final.drop(columns=["Note Ctrl 2"], inplace=True)
-        if "Note Ctrl 3" in df_final.columns:
-            df_final.drop(columns=["Note Ctrl 3"], inplace=True)
+        #if "Note Ctrl 2" in df_final.columns:
+        #    df_final.drop(columns=["Note Ctrl 2"], inplace=True)
+        #if "Note Ctrl 3" in df_final.columns:
+        #    df_final.drop(columns=["Note Ctrl 3"], inplace=True)
+        
+
+            
+            
+            
         df_final = manipulation_data.calculer_moyenne(df_final, pourcentage_ctrl, pourcentage_act_int)
         
         df_final = manipulation_data.calculer_age(df_final)
 
         
         # Reorder the columns
-        df_final = df_final[['Code Massar', 
-                            'Nom et prénom', 
-                            'Date Naissance', 
-                            'Age',
-                            'Sexe',
-                            'Classe', 
-                            'Sub Classe', 
-                            'Note Ctrl 1',
-                            'Note Act Int',
-                            'Moyenne'
-                            ]]
+        #df_final = df_final[['Code Massar', 
+         #                   'Nom et prénom', 
+          #                  'Date Naissance', 
+           #                 'Age',
+            #                'Sexe',
+             #               'Classe', 
+              #              'Sub Classe', 
+               #             'Note Ctrl 1',
+                #            'Note Act Int',
+                 #           'Moyenne'
+                  #          ]]
+                  
+        # Case 1: Only 'Note Ctrl 1' exists
+        if 'Note Ctrl 1' in df_final.columns and 'Note Ctrl 2' not in df_final.columns and 'Note Ctrl 3' not in df_final.columns:
+            df_final = df_final[['Code Massar', 
+                                'Nom et prénom', 
+                                'Date Naissance', 
+                                'Age',
+                                'Sexe',
+                                'Classe', 
+                                'Sub Classe', 
+                                'Note Ctrl 1', 
+                                'Note Act Int',
+                                'Moyenne'
+                                ]]
+
+        # Case 2: 'Note Ctrl 1' and 'Note Ctrl 2' exist
+        elif 'Note Ctrl 1' in df_final.columns and 'Note Ctrl 2' in df_final.columns and 'Note Ctrl 3' not in df_final.columns:
+            df_final = df_final[['Code Massar', 
+                                'Nom et prénom', 
+                                'Date Naissance', 
+                                'Age',
+                                'Sexe',
+                                'Classe', 
+                                'Sub Classe', 
+                                'Note Ctrl 1',
+                                'Note Ctrl 2', 
+                                'Note Act Int',
+                                'Moyenne'
+                                ]]
+
+        # Case 3: 'Note Ctrl 1', 'Note Ctrl 2', and 'Note Ctrl 3' exist
+        elif 'Note Ctrl 1' in df_final.columns and 'Note Ctrl 2' in df_final.columns and 'Note Ctrl 3' in df_final.columns:
+            df_final = df_final[['Code Massar', 
+                                'Nom et prénom', 
+                                'Date Naissance', 
+                                'Age',
+                                'Sexe',
+                                'Classe', 
+                                'Sub Classe', 
+                                'Note Ctrl 1',
+                                'Note Ctrl 2', 
+                                'Note Ctrl 3',
+                                'Note Act Int',
+                                'Moyenne'
+                                ]]
+
         
         df_final = manipulation_data.evaluer_notes(df_final)
         
@@ -277,8 +362,14 @@ def main():
             request_on_data.requette_2(df_final)
         elif selected_query == 'Nombre d\'élèves':
             request_on_data.requette_3(df_final)
+        elif selected_query == 'Nombre d\'élèves':
+            request_on_data.requette_3(df_final)
         elif selected_query == 'Controle 1':
             request_on_data.requette_4(df_final)
+        elif 'Controle 2' in options and selected_query == 'Controle 2':
+                request_on_data.requette_4c2(df_final)
+        elif 'Controle 3' in options and selected_query == 'Controle 3':
+                request_on_data.requette_4c3(df_final)
         elif selected_query == 'Moyennes':
             request_on_data.requette_5(df_final)
         elif selected_query == 'Mentions':
