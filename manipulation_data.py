@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np 
 import re
 import datetime
+import streamlit as st
 
 
 
@@ -22,7 +23,8 @@ def process_files(uploaded_files):
             break
 
     if selected_file is None:
-        return None
+        #st.warning("Warning: The file starting with 'ListEleve' does not exist.")
+        return pd.DataFrame()  # Return an empty DataFrame instead of None #None
 
     # Define the mapping from Arabic to French
     arabic_to_french = {'ذكر': 'H', 'أنثى': 'F'}
