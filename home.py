@@ -9,15 +9,12 @@ from streamlit_option_menu import option_menu
 import base64 
 import io
 
-
 import manipulation_data
 import request_on_data
 
 
 st.set_page_config(page_title="Dashboard Massar",page_icon="📊",layout="wide")
-#st.header("Exploration des données du système de gestion scolaire MASSAR")
-# Add title using Markdown
-#st.markdown("# Exploration des données du système de gestion scolaire MASSAR")
+
 
 custom_css = """
 <style>
@@ -79,20 +76,20 @@ st.markdown("<h2 class='black-background' style='text-align: center;'>Exploratio
 # Define the main function
 def main():
     #st.title("Streamlit App")
-    st.sidebar.title("Upload your massar exported files")
+    st.sidebar.title("Chargez vos fichiers exportés depuis Massar")
 
     # File uploader in the sidebar
     #uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
-    uploaded_files = st.sidebar.file_uploader("Upload your Excel files", type=["xls","xlsx"], accept_multiple_files=True)
+    uploaded_files = st.sidebar.file_uploader("Charger vos fichiers Excel", type=["xls","xlsx"], accept_multiple_files=True)
     
     # Check if files are uploaded
     if not uploaded_files:
         st.write("")
         st.write("")
-        st.warning("Please upload your files !")
+        st.warning("Veuillez charger vos fichiers !")
         st.write("")
         # Display warning message
-        st.info("Required files:\n1) Exported lists from Massar with option (*) (Many xlsx files)\n2) Students list of the actual year, given by the director of school (One xls or xlsx file)")
+        st.info("Fichiers requis:\n1) Listes exportées de Massar avec l'option (*) (plusieurs fichiers xlsx)\n2) Liste des informations des élèves de l'année en cours, fournie par le directeur de l'école (un fichier xls ou xlsx)")
         
         st.stop()
     # Check if files are uploaded
@@ -130,7 +127,7 @@ def main():
         col4, col5, col6 = st.columns(3)
         col4.write(f"<div style='text-align: center; font-size: 30px;'><b>Academie:</b> <span style='color:#BF1F4D'>{academie}</span></div>", unsafe_allow_html=True)
         col5.write(f"<div style='text-align: center; font-size: 30px;'><b>Province:</b> <span style='color:#BF1F4D'>{province}</span></div>", unsafe_allow_html=True)
-        col6.write(f"<div style='text-align: center; font-size: 30px;'><b>Ecole:</b> <span style='color:#BF1F4D'>{ecole}</span></div>", unsafe_allow_html=True)
+        col6.write(f"<div style='text-align: center; font-size: 30px;'><b>Collége/Lycée:</b> <span style='color:#BF1F4D'>{ecole}</span></div>", unsafe_allow_html=True)
         #st.markdown("---")
         
         
@@ -152,33 +149,29 @@ def main():
         
         
 
-        st.sidebar.title("Input Parameters")
+        st.sidebar.title("Paramètres")
         # Add message info
-        st.sidebar.info("These are the actual percentages of massar to calculate Moyenne. You can adjust the percentages...")
+        st.sidebar.info("Il s'agit des pourcentages réels de massar pour calculer la Moyenne. Vous pouvez ajuster les pourcentages...")
         # Ask the user to enter the percentage for pourcentage_ctrl
-        pourcentage_ctrl = st.sidebar.number_input("Enter the percentage for ctrls:", 
+        pourcentage_ctrl = st.sidebar.number_input("Indiquer le pourcentage pour les contrôles:", 
                                     min_value=0.01, max_value=99.99, step=0.01, value=57.19,format="%.2f")
                 
-        pourcentage_act_int = st.sidebar.number_input("Enter the percentage for Activité intégté :", 
+        pourcentage_act_int = st.sidebar.number_input("Indiquer le pourcentage pour les activitées intégrées :", 
                                     min_value=0.01, max_value=99.99, step=0.01, value=42.81, format="%.2f")
         
         # Check if the total percentage is equal to 100
         total_percentage = pourcentage_ctrl + pourcentage_act_int
         if total_percentage != 100:
-            st.sidebar.error("Error: The total percentage must equal 100. Please adjust your input.")
+            st.sidebar.error("Erreur : Le pourcentage total doit être égal à 100. Veuillez ajuster votre saisie.")
         
 
 
-        
-    # Check if data is uploaded
-    #if not data.empty:
-        #st.sidebar.title("Queries")
-        #selected_query = st.sidebar.selectbox('Select Query', ['Statistic info','Age', 'Sexe', 'Nombre d\'élèves', 'Controle 1', 'Moyennes', 'Mentions', 'Trois premiers éleves','Information sur apprenant'])
+   
 
         st.title("Menu")
 
         # Define the main query options
-        query_options = ["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Controle 1", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"]
+        query_options = ["Informations statistiques", "Âge", "Sexe", "Nombre d'élèves", "Controle 1", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"]
         
         
         # Dropping columns if all values are not NaN
@@ -194,7 +187,7 @@ def main():
         control_columns = [col for col in ['Note Ctrl 1', 'Note Ctrl 2', 'Note Ctrl 3'] if col in df_final.columns]
 
         # Generate the options for the option menu
-        options = ["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"]
+        options = ["Informations statistiques", "Âge","Sexe", "Nombre d'élèves", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"]
         if control_columns:
             options.insert(4, "Controle 1")
         if len(control_columns) > 1:
@@ -216,49 +209,23 @@ def main():
                 
         # Use the option menu to select the main query
         selected_query = option_menu(None, 
-                            #["Statistic info", "Age", "Sexe", "Nombre d'élèves", "Controle 1", "Moyennes", "Mentions", "N premiers éleves", "Information sur apprenant"],
                             options=options,
-                            #icons= ["info-circle", "person-circle"  ,"gender-ambiguous",  "person-lines-fill", "person-vcard", "journal-text", "journal-check","123", "person-badge" ],
                             icons=icons,
                             menu_icon="cast",
                             default_index=0,
                             orientation="horizontal",
                             styles={
-                                #"container": {"white-space": "nowrap"}  # Empêcher le retour à la ligne pour les éléments
-                                "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
+                                "container": {"max-width": "100%", "white-space": "nowrap"}  
                             }
                 )
 
 
-
-        #st.markdown("---")
-        
-        #if "Note Ctrl 2" in df_final.columns:
-        #    df_final.drop(columns=["Note Ctrl 2"], inplace=True)
-        #if "Note Ctrl 3" in df_final.columns:
-        #    df_final.drop(columns=["Note Ctrl 3"], inplace=True)
-        
-
-            
-            
+ 
             
         df_final = manipulation_data.calculer_moyenne(df_final, pourcentage_ctrl, pourcentage_act_int)
         
         df_final = manipulation_data.calculer_age(df_final)
 
-        
-        # Reorder the columns
-        #df_final = df_final[['Code Massar', 
-         #                   'Nom et prénom', 
-          #                  'Date Naissance', 
-           #                 'Age',
-            #                'Sexe',
-             #               'Classe', 
-              #              'Sub Classe', 
-               #             'Note Ctrl 1',
-                #            'Note Act Int',
-                 #           'Moyenne'
-                  #          ]]
                   
         # Case 1: Only 'Note Ctrl 1' exists
         if 'Note Ctrl 1' in df_final.columns and 'Note Ctrl 2' not in df_final.columns and 'Note Ctrl 3' not in df_final.columns:
@@ -312,20 +279,20 @@ def main():
 
 
 
-        if selected_query == 'Statistic info':
-            st.write("Nombre total de lignes :", len(df_final))
+        if selected_query == 'Informations statistiques':
+            st.write("Nombre total des apprenants :", len(df_final))
             # Options d'affichage
-            expander = st.expander("Nombre de lignes à afficher :", expanded=False)
+            expander = st.expander("Nombre de premier lignes à afficher :", expanded=False)
             with expander:
                 use_container_width = True
                 # Display the total number of rows
-                st.write("Nombre total de lignes :", len(df_final))
+                st.write("Nombre total des apprenants :", len(df_final))
 
                 # Select the number of rows to display
-                row_selection = st.select_slider("Nombre de lignes à afficher", options=list(range(1, len(df_final) + 1)))
+                row_selection = st.select_slider("Nombre de premier lignes à afficher", options=list(range(1, len(df_final) + 1)))
 
                 # Afficher le df avec le nombre de lignes sélectionné
-                st.write("DataFrame avec le nombre de lignes sélectionné:")
+                st.write("Données avec le nombre de lignes sélectionnées:")
                 #st.write(df_final.head(row_selection))
                 st.dataframe(df_final.head(row_selection), use_container_width=use_container_width)
                 
@@ -356,7 +323,7 @@ def main():
             #############
             st.markdown("---")
             request_on_data.display_metrics(df_final)
-        elif selected_query == 'Age':
+        elif selected_query == 'Âge':
             request_on_data.requette_1(df_final)
         elif selected_query == 'Sexe':
             request_on_data.requette_2(df_final)
