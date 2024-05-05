@@ -4,78 +4,94 @@ import numpy as np
 import re
 import datetime
 import streamlit as st
+import time
+import os
+import warnings
 
 
 
+# Ignorer les avertissements concernant la suppression de l'extension de validation des données dans openpyxl
+warnings.filterwarnings("ignore", message="Data Validation extension is not supported and will be removed", category=UserWarning)
 
-# Define the starting row for data extraction
-start_row = 17
-
-# Define the column names for the specific data to be extracted
-column_names = ['Unnamed: 2', 'Unnamed: 3', 'Unnamed: 5', 'النقطة', 'النقطة.1', 'النقطة.2', 'النقطة.3']
 
 def process_files(uploaded_files):
-    # Find the selected file with the specified name pattern
-    selected_file = None
+    # Define lists to store uploaded files meeting specific patterns
+    list1 = []  # Files matching pattern r'^export_notesCC_([A-Z0-9]+)-([A-Z0-9]+)_'
+    list2 = []  # Files matching pattern "ListEleve" and file extension .xls or .xlsx
+
+    # Iterate over uploaded files to categorize them into lists
     for file in uploaded_files:
-        if "ListEleve" in file.name and (file.name.endswith(".xls") or file.name.endswith(".xlsx")):
-            selected_file = file
-            break
+        if re.match(r'^export_notesCC_([A-Z0-9]+)-([A-Z0-9]+)_', file.name):
+            list1.append(file)
+        elif "ListEleve" in file.name and (file.name.endswith(".xls") or file.name.endswith(".xlsx")):
+            list2.append(file)
 
-    if selected_file is None:
-        #st.warning("Warning: The file starting with 'ListEleve' does not exist.")
-        return pd.DataFrame()  # Return an empty DataFrame instead of None #None
-
-    # Define the mapping from Arabic to French
-    arabic_to_french = {'ذكر': 'H', 'أنثى': 'F'}
-
-    # Open the Excel file
-    xls = pd.ExcelFile(selected_file)
-
-    # Get the list of sheet names
-    sheet_names = xls.sheet_names
-
-    # Define an empty dictionary to store dictionaries for each DataFrame
-    df_dicts = {}
-
-    # Iterate through each sheet and store its contents in a separate DataFrame
-    for i, sheet_name in enumerate(sheet_names):
-        # Read the sheet into a DataFrame, starting from row 13 and selecting specific columns
-        df = pd.read_excel(selected_file, sheet_name=sheet_name, usecols=['Unnamed: 11', 'Unnamed: 12', 'Unnamed: 16', 'Unnamed: 23'], skiprows=13)
-        
-        # Rename columns for convenience
-        df.columns = ['Sexe', 'nom', 'Prenom','Code Massar']
-        df = df.drop(0)
-        # Reset index after dropping row
-        df = df.reset_index(drop=True)
-        
-        # Merge 'nom' and 'Prenom' columns into a single column
-        df['Nom et prénom'] = df['Prenom'] + ' ' + df['nom']
-        
-        # Drop the original 'nom' and 'Prenom' columns
-        df = df.drop(columns=['nom', 'Prenom'])
-        
-        # Translate 'sexe' column from Arabic to French
-        df['Sexe'] = df['Sexe'].replace(arabic_to_french)
-        
-        # Create a dictionary for the current DataFrame
-        df_dict = df.set_index('Code Massar')['Sexe'].to_dict()
-        
-        # Store the dictionary in df_dicts
-        df_dicts[f'df{i+1}'] = df_dict
-
-    # Merge all dictionaries in df_dicts into a single dictionary
-    merged_code_massar_gender = {k: v for dct in df_dicts.values() for k, v in dct.items()}
-
-    # Create an empty list to store all extracted data
-    all_data = []
+    # Check if any file is missing in list2, if so, prompt the user to re-upload
+    if not list2:
+        # Send a message to re-upload the file
+        st.warning("Attention : Veuillez télécharger à nouveau le fichier commençant par 'ListEleve' et portant l'extension .xls ou .xlsx.")
+        return None
     
-    # Define the pattern to extract class and subclass from the file name
-    pattern = r'^export_notesCC_([A-Z0-9]+)-([A-Z0-9]+)_'
-    
-    # Iterate over each uploaded file
-    for file in uploaded_files:
-        if file != selected_file:
+    selected_file = list2[0]
+
+    try:
+        # Open the Excel file
+        xls = pd.ExcelFile(selected_file)
+
+        # Get the list of sheet names
+        sheet_names = xls.sheet_names
+
+        # Define an empty dictionary to store dictionaries for each DataFrame
+        df_dicts = {}
+        
+        # Define the mapping from Arabic to French
+        arabic_to_french = {'ذكر': 'H', 'أنثى': 'F'}
+
+        # Iterate through each sheet and store its contents in a separate DataFrame
+        for i, sheet_name in enumerate(sheet_names):
+            # Read the sheet into a DataFrame, starting from row 13 and selecting specific columns
+            df = pd.read_excel(selected_file, sheet_name=sheet_name, usecols=['Unnamed: 11', 'Unnamed: 12', 'Unnamed: 16', 'Unnamed: 23'], skiprows=13)
+            
+            # Rename columns for convenience
+            df.columns = ['Sexe', 'nom', 'Prenom','Code Massar']
+            df = df.drop(0)
+            # Reset index after dropping row
+            df = df.reset_index(drop=True)
+            
+            # Merge 'nom' and 'Prenom' columns into a single column
+            df['Nom et prénom'] = df['Prenom'] + ' ' + df['nom']
+            
+            # Drop the original 'nom' and 'Prenom' columns
+            df = df.drop(columns=['nom', 'Prenom'])
+            
+            # Translate 'sexe' column from Arabic to French
+            df['Sexe'] = df['Sexe'].replace(arabic_to_french)
+            
+            # Create a dictionary for the current DataFrame
+            df_dict = df.set_index('Code Massar')['Sexe'].to_dict()
+            
+            # Store the dictionary in df_dicts
+            df_dicts[f'df{i+1}'] = df_dict
+
+        # Merge all dictionaries in df_dicts into a single dictionary
+        merged_code_massar_gender = {k: v for dct in df_dicts.values() for k, v in dct.items()}
+        
+        # Create an empty list to store all extracted data
+        all_data = []
+        
+        
+        # Define the pattern to extract class and subclass from the file name
+        pattern = r'^export_notesCC_([A-Z0-9]+)-([A-Z0-9]+)_'
+        
+        # Define the starting row for data extraction
+        start_row = 17
+
+        # Define the column names for the specific data to be extracted
+        column_names = ['Unnamed: 2', 'Unnamed: 3', 'Unnamed: 5', 'النقطة', 'النقطة.1', 'النقطة.2', 'النقطة.3']
+
+                
+        # Iterate over each file in list1
+        for file in list1:
             # Extract the file name
             file_name = file.name
             
@@ -99,7 +115,7 @@ def process_files(uploaded_files):
                 note_ctr3 = list(df[column_names[5]])
                 note_act = list(df[column_names[6]])
                 # Create a list of Sexe based on Code Massar using the dictionary
-                sexe = [ merged_code_massar_gender.get(cm, None) for cm in code_massar ]
+                sexe = [merged_code_massar_gender.get(cm, None) for cm in code_massar]
                 
                 # Store the data in a dictionary
                 data_dict = {
@@ -117,11 +133,30 @@ def process_files(uploaded_files):
                 
                 # Append the data dictionary to the list
                 all_data.append(data_dict)
+        
+        # Concatenate all data dictionaries into a single DataFrame
+        df_final = pd.concat([pd.DataFrame(data) for data in all_data], ignore_index=True)
+        
+        return df_final
+    except Exception as e:
+        # Inform the user about the error
+        st.error(f"An error occurred while processing the file '{selected_file.name}': {e}")
+        return None
+
+
+        
+        
     
-    # Concatenate all data dictionaries into a single DataFrame
-    df_final = pd.concat([pd.DataFrame(data) for data in all_data], ignore_index=True)
     
-    return df_final
+
+
+
+
+
+
+
+
+
 
 
 def calculer_moyenne(df_final, pourcentage_ctrl, pourcentage_act_int):
