@@ -24,7 +24,7 @@ def requette_1(df):
                                         "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
                                      })
     else:
-        st.write("No subqueries available for Age")
+        st.write("Aucune sous-requête n'est disponible pour l'âge")
 
 
     # Define the main container for the page
@@ -46,7 +46,7 @@ def requette_1(df):
                     #st.write(count_age_df, width=100)
                     
                     # Allow the user to download 'Code Massar' and 'Nom et prénom' of individuals of a specific age
-                    selected_age = st.selectbox("Select Age to Download Names", count_age_df['Age'])
+                    selected_age = st.selectbox("Sélectionner l'âge pour télécharger les noms", count_age_df['Age'])
                     filtered_df = df[df['Age'] == selected_age][['Code Massar', 'Nom et prénom','Sub Classe']]
 
                     
@@ -257,7 +257,7 @@ def requette_2(df):
                     use_container_width = True
                     #st.write(count_sexe_df)
                     st.dataframe(count_sexe_df, use_container_width=use_container_width)
-                    selected_gendre = st.selectbox("Select gendre to Download Names", count_sexe_df['Sexe'])
+                    selected_gendre = st.selectbox("Sélectionner le gendre pour télécharger les noms", count_sexe_df['Sexe'])
                     filtered_df = df[df['Sexe'] == selected_gendre ][['Code Massar', 'Nom et prénom','Sub Classe']]
                     
                     # Download Excel file
@@ -345,7 +345,7 @@ def requette_2(df):
                             st.dataframe(count_sexe_by_classe_df, use_container_width=use_container_width)
                             
                             #selected_gendre = st.selectbox("Select Gendre", count_sexe_by_classe_df['Sexe'])
-                            selected_gendre = st.selectbox(f"Select Gendre for {classe}", count_sexe_by_classe_df['Sexe'])
+                            selected_gendre = st.selectbox(f"Sélectionner le Gendre pour {classe}", count_sexe_by_classe_df['Sexe'])
                             filtered_data_classe_gendre = df[(df['Classe']==classe) & (df['Sexe'] == selected_gendre)]
                             excel_buffer = io.BytesIO()
                             with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
@@ -432,7 +432,7 @@ def requette_2(df):
                             #st.write(count_sexe_by_sub_classe_df)
                             st.dataframe(count_sexe_by_sub_classe_df, use_container_width=use_container_width)
                             
-                            selected_gendre = st.selectbox(f"Select Gendre for {sub_classe}", count_sexe_by_sub_classe_df['Sexe'])
+                            selected_gendre = st.selectbox(f"Sélectionner le Gendre pour {sub_classe}", count_sexe_by_sub_classe_df['Sexe'])
                             filtered_data_sub_classe_gendre = df[(df['Sub Classe']==sub_classe) & (df['Sexe'] == selected_gendre)]
                             excel_buffer = io.BytesIO()
                             with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
@@ -482,7 +482,7 @@ def requette_3(df):
                                         "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
                                      })
     else:
-        st.write("No subqueries available for Nombre d'élèves")
+        st.write("Aucune sous-requête n'est disponible pour Nombre d'étudiants")
     
     
     
@@ -496,7 +496,7 @@ def requette_3(df):
             filtered_data = df[df['Classe'].isin(classes)]
 
             if filtered_data.empty:
-                st.warning("No data available for the selected class(es).")
+                st.warning("Aucune donnée disponible pour la (les) classe(s) sélectionnée(s).")
             else:
                 all_classes = set(df['Classe'].unique())
                 if set(classes) == all_classes:
@@ -546,11 +546,11 @@ def requette_3(df):
             st.subheader("Nombre d'élèves par Sous Classe")
 
             # Filter data based on selected Sub Classe
-            sub_classes = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
+            sub_classes = st.multiselect("Choisir Sous Classe", df['Sub Classe'].unique())
             filtered_data = df[df['Sub Classe'].isin(sub_classes)]
 
             if filtered_data.empty:
-                st.warning("No data available for the selected sub class(es).")
+                st.warning("Aucune donnée disponible pour la (les) sous classe(s) sélectionnée(s).")
             else:
                 all_sub_classes = set(df['Sub Classe'].unique())
                 if set(sub_classes) == all_sub_classes:
@@ -615,7 +615,7 @@ def requette_4(df):
                                         "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
                                      })
     else:
-        st.write("No subqueries available for Controle 1")
+        st.write("Aucune sous-requête n'est disponible pour le contrôle 1")
     
     
     
@@ -626,7 +626,7 @@ def requette_4(df):
 
             # Select subclasses
             #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
-            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+            selected_subclasses = st.multiselect("Choisir Sous Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
 
             # Filter data based on selected subclasses
             filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
@@ -637,7 +637,7 @@ def requette_4(df):
                 subclasse_stats_df['Moyenne'] = subclasse_stats_df['Moyenne'].round(2)
 
                 # Displaying dataframe and plot for all subclasses
-                with st.expander("Max Note, Min Note, and Moyenne of Note Ctrl 1 for All Sub Classes", expanded=False):
+                with st.expander("Note maximale, note minimale et moyenne de la note Ctrl 1 pour toutes les sous-classes", expanded=False):
                     col1, col2 = st.columns([2, 3])
                     with col1:
                         use_container_width = True
@@ -661,7 +661,7 @@ def requette_4(df):
                     subclass_stats_df.columns = ['Statistique', 'Valeur']
                     subclass_stats_df['Valeur'] = subclass_stats_df['Valeur'].round(2)
 
-                    with st.expander(f"Max Note, Min Note, and Moyenne of Note Ctrl 1 for Sub Classe: {subclass}", expanded=False):
+                    with st.expander(f"Note maximale, note minimale et moyenne de la note Ctrl 1 pour la Sous Classe: {subclass}", expanded=False):
                         col1, col2 = st.columns([2, 3])
                         with col1:
                             use_container_width = True
@@ -710,7 +710,7 @@ def requette_4(df):
 
             # Select classes
             #selected_classes = st.multiselect("Select Classe", df['Classe'].unique())
-            selected_classes = st.multiselect("Select Classe", df['Classe'].unique(), key="select_classe_requette_1")
+            selected_classes = st.multiselect("Choisir Classe", df['Classe'].unique(), key="select_classe_requette_1")
 
 
             # Filter data based on selected classes
@@ -776,7 +776,7 @@ def requette_4(df):
                             st.dataframe(total_counts_classe_df, use_container_width=use_container_width)
                             # User selects whether to download students with scores >= 10 or < 10
                             #score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key="select_score_range")
-                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{classe}")
+                            score_range = st.selectbox("Sélectionner la plage de score:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{classe}")
                              # Filter data for the current class
                             class_data = filtered_data[filtered_data['Classe'] == classe]
 
@@ -826,7 +826,7 @@ def requette_4(df):
 
             # Select subclasses
             #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
-            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+            selected_subclasses = st.multiselect("Choisir Sous Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
 
             # Filter data based on selected subclasses
             filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
@@ -889,7 +889,7 @@ def requette_4(df):
                         with col1:
                             use_container_width = True
                             st.dataframe(total_counts_subclasse_df, use_container_width=use_container_width)
-                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
+                            score_range = st.selectbox("Sélectionner la plage de score:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
                             # Filter data for the current class
                             subclass_data = filtered_data[filtered_data['Sub Classe'] == subclass]
 
@@ -937,10 +937,6 @@ def requette_4(df):
 
 
 
-
-    
-    
-
 #Requette Controle 2 : 
 
 def requette_4c2(df):
@@ -958,7 +954,7 @@ def requette_4c2(df):
                                         "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
                                      })
     else:
-        st.write("No subqueries available for Controle 2")
+        st.write("Aucune sous-requête n'est disponible pour Controle 2")
     
     
     
@@ -969,7 +965,7 @@ def requette_4c2(df):
 
             # Select subclasses
             #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
-            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+            selected_subclasses = st.multiselect("Choisir Sous Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
 
             # Filter data based on selected subclasses
             filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
@@ -980,7 +976,7 @@ def requette_4c2(df):
                 subclasse_stats_df['Moyenne'] = subclasse_stats_df['Moyenne'].round(2)
 
                 # Displaying dataframe and plot for all subclasses
-                with st.expander("Max Note, Min Note, and Moyenne of Note Ctrl 1 for All Sub Classes", expanded=False):
+                with st.expander("Note maximale, note minimale et moyenne de la note Ctrl 2 pour toutes les sous-classes", expanded=False):
                     col1, col2 = st.columns([2, 3])
                     with col1:
                         use_container_width = True
@@ -1004,7 +1000,7 @@ def requette_4c2(df):
                     subclass_stats_df.columns = ['Statistique', 'Valeur']
                     subclass_stats_df['Valeur'] = subclass_stats_df['Valeur'].round(2)
 
-                    with st.expander(f"Max Note, Min Note, and Moyenne of Note Ctrl 2 for Sub Classe: {subclass}", expanded=False):
+                    with st.expander(f"Note maximale, note minimale et moyenne de la note Ctrl 2 pour la Sous Classe: {subclass}", expanded=False):
                         col1, col2 = st.columns([2, 3])
                         with col1:
                             use_container_width = True
@@ -1053,7 +1049,7 @@ def requette_4c2(df):
 
             # Select classes
             #selected_classes = st.multiselect("Select Classe", df['Classe'].unique())
-            selected_classes = st.multiselect("Select Classe", df['Classe'].unique(), key="select_classe_requette_1")
+            selected_classes = st.multiselect("Choisir Classe", df['Classe'].unique(), key="select_classe_requette_1")
 
 
             # Filter data based on selected classes
@@ -1232,7 +1228,7 @@ def requette_4c2(df):
                         with col1:
                             use_container_width = True
                             st.dataframe(total_counts_subclasse_df, use_container_width=use_container_width)
-                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
+                            score_range = st.selectbox("Sélectionner la plage de score:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
                             # Filter data for the current class
                             subclass_data = filtered_data[filtered_data['Sub Classe'] == subclass]
 
@@ -1279,6 +1275,7 @@ def requette_4c2(df):
 
 
 
+#########################################################
 
 
 
@@ -1299,7 +1296,7 @@ def requette_4c3(df):
                                         "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
                                      })
     else:
-        st.write("No subqueries available for Controle 3")
+        st.write("Aucune sous-requête n'est disponible pour Controle 3")
     
     
     
@@ -1310,7 +1307,7 @@ def requette_4c3(df):
 
             # Select subclasses
             #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
-            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+            selected_subclasses = st.multiselect("Choisir Sous Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
 
             # Filter data based on selected subclasses
             filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
@@ -1321,7 +1318,7 @@ def requette_4c3(df):
                 subclasse_stats_df['Moyenne'] = subclasse_stats_df['Moyenne'].round(2)
 
                 # Displaying dataframe and plot for all subclasses
-                with st.expander("Max Note, Min Note, and Moyenne of Note Ctrl 3 for All Sub Classes", expanded=False):
+                with st.expander("Note maximale, note minimale et moyenne de la note Ctrl 3 pour toutes les sous-classes", expanded=False):
                     col1, col2 = st.columns([2, 3])
                     with col1:
                         use_container_width = True
@@ -1345,7 +1342,7 @@ def requette_4c3(df):
                     subclass_stats_df.columns = ['Statistique', 'Valeur']
                     subclass_stats_df['Valeur'] = subclass_stats_df['Valeur'].round(2)
 
-                    with st.expander(f"Max Note, Min Note, and Moyenne of Note Ctrl 3 for Sub Classe: {subclass}", expanded=False):
+                    with st.expander(f"Note maximale, note minimale et moyenne de la note Ctrl 3 pour la Sous Classe: {subclass}", expanded=False):
                         col1, col2 = st.columns([2, 3])
                         with col1:
                             use_container_width = True
@@ -1394,7 +1391,7 @@ def requette_4c3(df):
 
             # Select classes
             #selected_classes = st.multiselect("Select Classe", df['Classe'].unique())
-            selected_classes = st.multiselect("Select Classe", df['Classe'].unique(), key="select_classe_requette_1")
+            selected_classes = st.multiselect("Choisir Classe", df['Classe'].unique(), key="select_classe_requette_1")
 
 
             # Filter data based on selected classes
@@ -1460,7 +1457,7 @@ def requette_4c3(df):
                             st.dataframe(total_counts_classe_df, use_container_width=use_container_width)
                             # User selects whether to download students with scores >= 10 or < 10
                             #score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key="select_score_range")
-                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{classe}")
+                            score_range = st.selectbox("Sélectionner la plage de score:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{classe}")
                              # Filter data for the current class
                             class_data = filtered_data[filtered_data['Classe'] == classe]
 
@@ -1510,7 +1507,7 @@ def requette_4c3(df):
 
             # Select subclasses
             #selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
-            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
+            selected_subclasses = st.multiselect("Choisir Sous Classe", df['Sub Classe'].unique(), key="select_sub_classe_requette_1")
 
             # Filter data based on selected subclasses
             filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
@@ -1573,7 +1570,7 @@ def requette_4c3(df):
                         with col1:
                             use_container_width = True
                             st.dataframe(total_counts_subclasse_df, use_container_width=use_container_width)
-                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
+                            score_range = st.selectbox("Sélectionner la plage de score:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
                             # Filter data for the current class
                             subclass_data = filtered_data[filtered_data['Sub Classe'] == subclass]
 
@@ -1619,6 +1616,11 @@ def requette_4c3(df):
 
 
 
+#####################################################
+
+
+
+
 
 
 
@@ -1645,7 +1647,7 @@ def requette_5(df):
                                         "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
                                      })
     else:
-        st.write("No subqueries available for Moyenne")
+        st.write("Aucune sous-requête disponible pour Moyenne")
     
     
     
@@ -1656,7 +1658,7 @@ def requette_5(df):
             st.subheader("Valeur Maximale, valeur minimale et la moyenne dans chaque sous classe")
 
             # Select subclasses
-            selected_subclasses = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
+            selected_subclasses = st.multiselect("Choosir Sous Classe", df['Sub Classe'].unique())
 
             # Filter data based on selected subclasses
             filtered_data = df[df['Sub Classe'].isin(selected_subclasses)]
@@ -1667,7 +1669,7 @@ def requette_5(df):
                 subclasse_stats_df['Moyenne'] = subclasse_stats_df['Moyenne'].round(2)
 
                 # Displaying dataframe and plot for all subclasses
-                with st.expander("Max Note, Min Note, and Moyenne for All Sub Classes", expanded=False):
+                with st.expander("Note maximale, note minimale et moyenne pour toutes les sous-classes", expanded=False):
                     col1, col2 = st.columns([2, 3])
                     with col1:
                         use_container_width = True
@@ -1691,7 +1693,7 @@ def requette_5(df):
                     subclass_stats_df.columns = ['Statistique', 'Valeur']
                     subclass_stats_df['Valeur'] = subclass_stats_df['Valeur'].round(2)
 
-                    with st.expander(f"Max Note, Min Note, and Moyenne for Sub Classe: {subclass}", expanded=False):
+                    with st.expander(f"Note maximale, note minimale et moyenne pour la sous-classe: {subclass}", expanded=False):
                         col1, col2 = st.columns([2, 3])
                         with col1:
                             use_container_width = True
@@ -1736,7 +1738,7 @@ def requette_5(df):
             st.subheader("Eleves ayant note au dessus et au dessous la moyenne par Classe")
 
             # Select classes
-            selected_classes = st.multiselect("Select Classe", df['Classe'].unique())
+            selected_classes = st.multiselect("Choisir Classe", df['Classe'].unique())
 
             # Filter data based on selected classes
             filtered_data = df[df['Classe'].isin(selected_classes)]
@@ -1798,7 +1800,7 @@ def requette_5(df):
                             st.dataframe(total_counts_classe_df, use_container_width=use_container_width)
                             #st.write(total_counts_classe_df)
                             
-                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{classe}")
+                            score_range = st.selectbox("Sélectionner la plage de score:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{classe}")
                             # Filter data for the current class
                             class_data = filtered_data[filtered_data['Classe'] == classe]
 
@@ -1908,7 +1910,7 @@ def requette_5(df):
                             st.dataframe(total_counts_subclasse_df, use_container_width=use_container_width)
                             #st.write(total_counts_subclasse_df)
                             
-                            score_range = st.selectbox("Select score range:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
+                            score_range = st.selectbox("Sélectionner la plage de score:", ["superieur à 10", "inferieur à 10"], key=f"select_score_range_{subclass}")
                             # Filter data for the current class
                             subclass_data = filtered_data[filtered_data['Sub Classe'] == subclass]
 
@@ -1973,7 +1975,7 @@ def requette_6(df):
                                         "container": {"max-width": "100%", "white-space": "nowrap"}  # Définir une largeur maximale pour le conteneur et empêcher le retour à la ligne
                                      })
     else:
-        st.write("No subqueries available for Mentions")
+        st.write("Aucune sous-requête n'est disponible pour Mentions")
     
     
     main_container = st.container()
@@ -1992,7 +1994,7 @@ def requette_6(df):
                     st.dataframe(count_mentions_df, use_container_width=use_container_width)
                     #st.write(count_mentions_df)
                     # Allow the user to download 'Code Massar' and 'Nom et prénom' of individuals of a specific age
-                    selected_mention = st.selectbox("Select Mention to download ", count_mentions_df['Mention'])
+                    selected_mention = st.selectbox("Sélectionnez la mention à télécharger ", count_mentions_df['Mention'])
                     filtered_df = df[df['Mention'] == selected_mention][['Code Massar', 'Nom et prénom','Sub Classe']]
 
                     
@@ -2089,7 +2091,7 @@ def requette_6(df):
                             #st.write(count_mention_by_classe_df)
                             # Allow the user to download 'Code Massar' and 'Nom et prénom' of individuals of a specific age
                             ##############################
-                            selected_mention = st.selectbox(f"Select Mention for {classe}", count_mention_by_classe_df['Mention'])
+                            selected_mention = st.selectbox(f"Choisir la Mention pour {classe}", count_mention_by_classe_df['Mention'])
                             filtered_data_classe_mention = df[(df['Classe']==classe) & (df['Mention'] == selected_mention)]
                             excel_buffer = io.BytesIO()
                             with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
@@ -2123,7 +2125,7 @@ def requette_6(df):
             st.subheader("Répartition de la Mention par Sous Classe")
 
             # Filter data based on selected Classe
-            sub_classes = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
+            sub_classes = st.multiselect("Choisir Sous Classe", df['Sub Classe'].unique())
             filtered_data = df[df['Sub Classe'].isin(sub_classes)]
             
             # Check if all available classes are selected
@@ -2132,8 +2134,8 @@ def requette_6(df):
                 count_mention_by_sub_classe_df = df['Mention'].value_counts().reset_index()
                 count_mention_by_sub_classe_df.columns = ['Mention', 'Count']
 
-                with st.expander("All Classes", expanded=False):
-                    st.write("All Classes:")
+                with st.expander("Tous les Classes", expanded=False):
+                    st.write("Tous les Classes:")
                     #col1, col2, col3 = st.columns([1, 1, 1])
                     col1, col2 = st.columns([2, 3])
                     col3 = st.columns([8])[0]  # Full width for the third column
@@ -2243,11 +2245,11 @@ def top_students_by_subclass(df, subclass, num_students):
 def requette_7(df):
     st.subheader("N premiers éleves")
     # Get unique subclasses
-    sub_classes = st.multiselect("Select Sub Classe", df['Sub Classe'].unique())
+    sub_classes = st.multiselect("Choisir Sous Classe", df['Sub Classe'].unique())
 
     # If no subclass is selected, return
     if not sub_classes:
-        st.warning("Please select at least one Sub Classe.")
+        st.warning("Veuillez sélectionner au moins une Sous Classe.")
         return
 
     # Define custom colors
@@ -2269,7 +2271,7 @@ def requette_7(df):
                          color_discrete_sequence=custom_colors)
         
         # Display the DataFrame and plot within separate columns
-        with st.expander(f"All Sub Classes", expanded=False):
+        with st.expander(f"Tous les Sous Classes", expanded=False):
             # Divide the space into two columns
             col1, col2 = st.columns([2, 3])
 
@@ -2338,41 +2340,41 @@ def display_metrics(data):
     total_female = data[data['Sexe'] == 'F']['Sexe'].count()
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("Total Students", total_students)
-    c2.metric("Total Males", total_male)
-    c3.metric("Total Females", total_female)
+    c1.metric("Total des apprenants", total_students)
+    c2.metric("Total sexe masculin", total_male)
+    c3.metric("Total sexe féminin", total_female)
 
     # Line 2: Total students in each classe
     total_students_per_classe = data.groupby('Classe').size().reset_index(name='Total Students')
 
-    st.subheader("Total Students in Each Classe")
-    with st.expander("Show Total Students in Each Classe"):
+    st.subheader("Nombre total des apprenants dans chaque Classe")
+    with st.expander("Afficher le nombre total des apprenants dans chaque classe"):
         for index, row in total_students_per_classe.iterrows():
             col1, col2 = st.columns([1, 1])
             with col1:
                 st.write(row['Classe'])
             with col2:
-                st.metric("Total Students", row['Total Students'])
+                st.metric("Total apprenants", row['Total Students'])
 
 
     # Line 3: Total students in each sub classe
     total_students_per_sub_classe = data.groupby('Sub Classe').size().reset_index(name='Total Students')
 
-    st.subheader("Total Students in Each Sub Classe")
-    with st.expander("Show Total Students in Each Sub Classe"):
+    st.subheader("Nombre total des apprenants dans chaque Sous Classe")
+    with st.expander("Afficher le nombre total des apprenants dans chaque Sous Classe"):
         for index, row in total_students_per_sub_classe.iterrows():
             col1, col2 = st.columns([1, 1])
             with col1:
                 st.write(row['Sub Classe'])
             with col2:
-                st.metric("Total Students", row['Total Students'])
+                st.metric("Total apprenants", row['Total Students'])
 
     # Line 4: Mean in each sub classe (use column: Moyenne)
     mean_per_sub_classe = data.groupby('Sub Classe')['Moyenne'].mean().reset_index(name='Mean')
     mean_per_sub_classe['Mean'] = mean_per_sub_classe['Mean'].round(2)
 
-    st.subheader("Mean in Each Sub Classe")
-    with st.expander("Show Mean in Each Sub Classe"):
+    st.subheader("Moyenne dans chaque Sous Classe")
+    with st.expander("Afficher Moyenne dans chaque Sous Classe"):
         for index, row in mean_per_sub_classe.iterrows():
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -2398,7 +2400,7 @@ def display_student_info(data):
         student_info = data[data['Code Massar'] == code_massar_input]
         if not student_info.empty:
             use_container_width = True
-            st.subheader("Informations de l'élève")
+            st.subheader("Informations de l'apprenant")
             #st.write(student_info)
             st.dataframe(student_info, use_container_width=use_container_width)
             
@@ -2406,7 +2408,7 @@ def display_student_info(data):
             st.write("Aucune information trouvée pour ce Code Massar.")
     elif selected_codes_massar:
         selected_student_info = data[data['Code Massar'].isin(selected_codes_massar)]
-        st.subheader("Informations des élèves sélectionnés")
+        st.subheader("Informations des apprenants sélectionnés")
         use_container_width = True
         st.dataframe(selected_student_info, use_container_width=use_container_width)
         #st.write(selected_student_info)
